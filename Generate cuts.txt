@@ -1,0 +1,19 @@
+VID 1:
+x_1 =, obj =, dual=, 
+Can be formulated as Y = a*x + b    NP!: passe på at den øker, eller minker avhengig om min / max problem
+Want to create a linear function that is the linear (Benders) cut
+a = dual of x
+Y = obj value
+x = previous x_1
+b = Y - a*x
+
+VID 2: Gjennomgang av litt hvordan å sette opp problemet
+Lage funksjoner av alle småproblemer
+kjør for loop (så den stopper selv om den ikke konvergerer, og vi kan analysere litt)
+- Definer MasterProblem funksjon og returner den variabelen vi vil ha (x_1) -> brukes videre.
+- samme med subproblem (det betyr at pyomo koden skal være i disse to funksjonene)
+
+
+VID 3: Creating a constraint that adds cuts
+
+VID 4: SDP

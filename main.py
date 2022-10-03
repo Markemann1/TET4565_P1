@@ -1,3 +1,6 @@
+import pyomo.environ as pyo
+from pyomo.opt import SolverFactory
+
 
 # Hydropower unit
 V_0 = 5  # mm3
@@ -14,4 +17,5 @@ Inflow_24t = 50  # m^3/s
 Inflow_48t = 25*scen  # m^3/s
 N_Scenarios = 5  # 5 scenarios for the last 24 hours
 P_scenario = 1/5  # [per unit], probability each scenario
-Price = 50 + t  # linearly increasing cost based on timestep, from 0 to 48 hour
+Price = 50 + t[0]  # linearly increasing cost based on timestep, from 0 to 48 hour
+
