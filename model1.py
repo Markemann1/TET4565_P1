@@ -41,7 +41,7 @@ def task1_model():
 
     # Declaring decision variables
     model.q1 = pyo.Var(model.T, within=pyo.NonNegativeReals)
-    model.v_res1 = pyo.Var(model.T, model.V_01 + model.IF_1 - model.q1, within=pyo.NonNegativeReals)
+    model.v_res1 = pyo.Var(model.T, model.V_01 + model.IF_1 - model.q1, within=pyo.NonNegativeReals)  # TODO: Blir denne riktig?
     model.p1 = pyo.Var(model.T, model.q1 * model.E_conv, within=pyo.NonNegativeReals)
 
     model.q2 = pyo.Var(model.T, model.S, within=pyo.NonNegativeReals)
@@ -52,7 +52,7 @@ def task1_model():
     def objective(model):  # TODO: Hvordan skille T1 og T2, for dette må jo være feil måte å gjøre det på
         return sum(model.p1[i] * model.MP[i] for i in model.T[1 - 24]) + sum((model.Prob[j]) * sum(
             model.p2[i][j] * model.MP[i] + model.WV * model.v_res2[i][j] for i in model.T[25-48]) for j in model.S)
-
+        # TODO: model.MP + i || endre MP param til statisk 50
     model.OBJ = pyo.Objective(rule=objective(model), sense=pyo.maximize)
 
     # Declaring constraints
