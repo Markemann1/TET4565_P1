@@ -8,17 +8,17 @@ def task1_model():
     S = list(range(1, 6))  # s = {1, 5}
 
     # Parameters data
-    MP_t = 50 + T(i)  # TODO: Hvordan får man denne til å telle fremover?
+    MP_t = 50 + T(i)  # TODO: pluss i objektivfunksjonen
     WV_end = 13000  # EUR/Mm^3
     prob = 0.2  # 1/5 pr scenario
     Q_max = 0.36  # Mm^3
     P_max = 100  # MW
     E_conv = 0.000000981  # MWh/Mm^3
     V_max = 10  # Mm^3
-    IF_1 = 0.18  #Mm^3/h, Inflow Stage 1
-    IF_2 = 0.09 * S(j) - 0.09  # Mm^3/h, Inflow Stage 2  # TODO: Hvordan får man denne til å telle gjennom
+    IF_1 = 0.18  # Mm^3/h, Inflow Stage 1
+    IF_2 = 0.09 * S(j) - 0.09  # Mm^3/h, Inflow Stage 2  # TODO: Gang i objektivfunksjon
     V_01 = 5  # Mm^3, initial water level, Stage 1
-    V_02 = v_res1[24]  # Mm^3initial water level, Stage 2  # TODO: dafuq gjør man her
+    V_02 = v_res1[24]  # Mm^3initial water level, Stage 2  # TODO: constraint
 
     model = pyo.ConcreteModel('Task 1b')
 
@@ -28,7 +28,7 @@ def task1_model():
 
     # Declaring parameters
     model.MP = pyo.Param(model.T, initialize=MP_t)  # Market price at t
-    model.WV = pyo.Param(model.T, model.S, initialize=WV_end)  # Water value at t = 48
+    model.WV = pyo.Param(initialize=WV_end)  # Water value at t = 48
     model.Prob = pyo.Param(model.S, initialize=prob)  # Probability of scenario
     model.Q_max = pyo.Param(initialize=Q_max)  # Max discharge of water to hydropower unit
     model.P_max = pyo.Param(initialize=P_max)  # Max power production of hydropower unit
@@ -43,18 +43,18 @@ def task1_model():
     model.q1 = pyo.Var(model.T, within=pyo.NonNegativeReals)
     model.v_res1 = pyo.Var(model.T, model.V_01 + model.IF_1 - model.q1, within=pyo.NonNegativeReals)  # TODO: Blir denne riktig?
     model.p1 = pyo.Var(model.T, model.q1 * model.E_conv, within=pyo.NonNegativeReals)
-
+    # TODO: ta inn variabel matten i constraints
     model.q2 = pyo.Var(model.T, model.S, within=pyo.NonNegativeReals)
-    model.v_res2 = pyo.Var(model.T, model.S, model.V_02 + model.IF_2 - model.q2, within=pyo.NonNegativeReals)
+    model.v_res2 = pyo.Var(model.T, model.S, model.V_01[24] + model.IF_2 - model.q2, within=pyo.NonNegativeReals)
     model.p2 = pyo.Var(model.T, model.S, model.q2 * model.E_conv, within=pyo.NonNegativeReals)
-
+    # TODO: fjern max constraintsene og brukt domain=(0, max)
     # Objective function
     def objective(model):  # TODO: Hvordan skille T1 og T2, for dette må jo være feil måte å gjøre det på
-        return sum(model.p1[i] * model.MP[i] for i in model.T[1 - 24]) + sum((model.Prob[j]) * sum(
-            model.p2[i][j] * model.MP[i] + model.WV * model.v_res2[i][j] for i in model.T[25-48]) for j in model.S)
-        # TODO: model.MP + i || endre MP param til statisk 50
+        return sum(model.p1[i] * model.MP[i] for i in model.T[:24]) + sum((model.Prob[j]) * sum(
+            model.p2[i][j] * model.MP[i] + model.WV * model.v_res2[48][j] for i in model.T[25-48]) for j in model.S)
+        # TODO: model.MP + i || endre MP param til statisk 50. Gjøre samme med scenario. Gange med j[0,5]
     model.OBJ = pyo.Objective(rule=objective(model), sense=pyo.maximize)
-
+    # TODO: Oppg C = Endre på ting og si fra hva jeg endret
     # Declaring constraints
     def productionLimit1(model):  # We cannot produce more than P_max
         return sum(model.p1[i] <= model.P_max for i in model.T)
