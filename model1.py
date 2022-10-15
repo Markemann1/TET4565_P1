@@ -28,21 +28,21 @@ def task1_model():
     model.S = pyo.Set(initialize=S)     # Scenarios, s
 
     # ---------- Declaring parameters ----------
-    model.MP = pyo.Param(initialize=MP)        # Market price at t
+    model.MP = pyo.Param(initialize=MP)                 # Market price at t
     model.WV = pyo.Param(initialize=WV_end)             # Water value at t = 48
     model.Prob = pyo.Param(initialize=prob)             # Probability of scenario
     model.Q_max = pyo.Param(initialize=Q_max)           # Max discharge of water to hydropower unit
     model.P_max = pyo.Param(initialize=P_max)           # Max power production of hydropower unit
     model.E_conv = pyo.Param(initialize=E_conv)         # Conversion of power, p, produced pr. discarged water, q
     model.V_max = pyo.Param(initialize=V_max)           # Max water capacity in reservoir
-    model.IF_1 = pyo.Param(initialize=IF_1)    # Inflow in stage 1, deterministic
+    model.IF_1 = pyo.Param(initialize=IF_1)             # Inflow in stage 1, deterministic
     model.IF_2 = pyo.Param(model.S, initialize=IF_2)    # Inflow in stage 2, stochastic
-    model.V_01 = pyo.Param(model.T1, initialize=V_01)    # Initial water level t = 1
+    model.V_01 = pyo.Param(initialize=V_01)   # Initial water level t = 1
 
     # ---------- Declaring decision variables ----------
     model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
-    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # TODO: mulig dette fikser startverdien
 
     model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
     model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
@@ -85,5 +85,3 @@ def task1_model():
     model.display()
     model.dual.display()
 
-
-task1_model()
