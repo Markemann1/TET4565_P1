@@ -3,58 +3,63 @@ from pyomo.opt import SolverFactory
 
 
 def task1_model():
-    # Sets data
-    T = list(range(1, 49))  # t = {1, 48}
-    S = list(range(1, 6))  # s = {1, 5}
+    # Set data
+    T1 = list(range(1, 25))
+    T2 = list(range(25, 49))
+    S = list(range(0, 4))
 
     # Parameters data
-    MP_t = 50 + T(i)  # TODO: pluss i objektivfunksjonen
-    WV_end = 13000  # EUR/Mm^3
-    prob = 0.2  # 1/5 pr scenario
-    Q_max = 0.36  # Mm^3
-    P_max = 100  # MW
-    E_conv = 0.000000981  # MWh/Mm^3
-    V_max = 10  # Mm^3
-    IF_1 = 0.18  # Mm^3/h, Inflow Stage 1
-    IF_2 = 0.09 * S(j) - 0.09  # Mm^3/h, Inflow Stage 2  # TODO: Gang i objektivfunksjon
-    V_01 = 5  # Mm^3, initial water level, Stage 1
-    V_02 = v_res1[24]  # Mm^3initial water level, Stage 2  # TODO: constraint
+    MP = 50                 # Start-value of market price  # TODO: Gang i objektivfunksjonen
+    WV_end = 13000          # EUR/Mm^3
+    prob = 0.2              # 1/5 pr scenario
+    Q_max = 0.36            # Mm^3
+    P_max = 100             # MW
+    E_conv = 0.000000981    # MWh/Mm^3
+    V_max = 10              # Mm^3
+    IF_1 = 0.18             # Mm^3/h, Inflow Stage 1
+    IF_2 = 0.09             # Mm^3/h, Inflow Stage 2  # TODO: Gang i objektivfunksjon med scenario (s)
+    V_01 = 5                # Mm^3, initial water level, Stage 1
+    V_02 = 0                # Mm^3initial water level, Stage 2  # TODO: løse med constraint
 
     model = pyo.ConcreteModel('Task 1b')
 
     # Declaring sets
-    model.T = pyo.Set(initialize=T)  # Time, t, hours
-    model.S = pyo.Set(initialize=S)  # Scenarios, s
+    model.T1 = pyo.Set(initialize=T1)   # First 24 hours, t
+    model.T2 = pyo.Set(initialize=T2)   # Last 24 hours, t
+    model.S = pyo.Set(initialize=S)     # Scenarios, s
 
     # Declaring parameters
-    model.MP = pyo.Param(model.T, initialize=MP_t)  # Market price at t
-    model.WV = pyo.Param(initialize=WV_end)  # Water value at t = 48
-    model.Prob = pyo.Param(model.S, initialize=prob)  # Probability of scenario
-    model.Q_max = pyo.Param(initialize=Q_max)  # Max discharge of water to hydropower unit
-    model.P_max = pyo.Param(initialize=P_max)  # Max power production of hydropower unit
-    model.E_conv = pyo.Param(initialize=E_conv)  # Conversion of power, p, produced pr. discarged water, q
-    model.V_max = pyo.Param(initialize=V_max)  # Max water capacity in reservoir
-    model.IF_1 = pyo.Param(initialize=IF_1)  # Inflow in stage 1, deterministic
-    model.IF_2 = pyo.Param(model.S, initialize=IF_2)  # Inflow in stage 2, stochastic
-    model.V_01 = pyo.Param(model.T, initialize=V_01)  # Initial water level t = 1
-    model.V_02 = pyo.Param(model.T, initialize=V_02)  # Initial water level t = 24
+    model.MP = pyo.Param(model.T, initialize=MP)        # Market price at t
+    model.WV = pyo.Param(initialize=WV_end)             # Water value at t = 48
+    model.Prob = pyo.Param(initialize=prob)             # Probability of scenario
+    model.Q_max = pyo.Param(initialize=Q_max)           # Max discharge of water to hydropower unit
+    model.P_max = pyo.Param(initialize=P_max)           # Max power production of hydropower unit
+    model.E_conv = pyo.Param(initialize=E_conv)         # Conversion of power, p, produced pr. discarged water, q
+    model.V_max = pyo.Param(initialize=V_max)           # Max water capacity in reservoir
+    model.IF_1 = pyo.Param(initialize=IF_1)             # Inflow in stage 1, deterministic
+    model.IF_2 = pyo.Param(model.S, initialize=IF_2)    # Inflow in stage 2, stochastic
+    model.V_01 = pyo.Param(model.T, initialize=V_01)    # Initial water level t = 1
+    model.V_02 = pyo.Param(model.T, initialize=V_02)    # Initial water level t = 24
 
     # Declaring decision variables
-    model.q1 = pyo.Var(model.T, within=pyo.NonNegativeReals)
-    model.v_res1 = pyo.Var(model.T, model.V_01 + model.IF_1 - model.q1, within=pyo.NonNegativeReals)  # TODO: Blir denne riktig?
-    model.p1 = pyo.Var(model.T, model.q1 * model.E_conv, within=pyo.NonNegativeReals)
-    # TODO: ta inn variabel matten i constraints
-    model.q2 = pyo.Var(model.T, model.S, within=pyo.NonNegativeReals)
-    model.v_res2 = pyo.Var(model.T, model.S, model.V_01[24] + model.IF_2 - model.q2, within=pyo.NonNegativeReals)
-    model.p2 = pyo.Var(model.T, model.S, model.q2 * model.E_conv, within=pyo.NonNegativeReals)
-    # TODO: fjern max constraintsene og brukt domain=(0, max)
-    # Objective function
-    def objective(model):  # TODO: Hvordan skille T1 og T2, for dette må jo være feil måte å gjøre det på
-        return sum(model.p1[i] * model.MP[i] for i in model.T[:24]) + sum((model.Prob[j]) * sum(
-            model.p2[i][j] * model.MP[i] + model.WV * model.v_res2[48][j] for i in model.T[25-48]) for j in model.S)
-        # TODO: model.MP + i || endre MP param til statisk 50. Gjøre samme med scenario. Gange med j[0,5]
+    model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
+    model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max))
+
+    model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
+    model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
+    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max))
+
+    def objective(model):
+        o1 = sum(model.p1[t] * (model.MP + t) for t in model.T1)
+        o2 = sum(model.Prob * model.p2[t][s] * (model.MP[t] + t) for t in model.T2 for s in model.S)
+        o3 = sum(model.WV * model.v_res2[48][s] for s in model.S)
+        obj = o1 + o2 + o3
+        return obj
     model.OBJ = pyo.Objective(rule=objective(model), sense=pyo.maximize)
-    # TODO: Oppg C = Endre på ting og si fra hva jeg endret
+
+
+
     # Declaring constraints
     def productionLimit1(model):  # We cannot produce more than P_max
         return sum(model.p1[i] <= model.P_max for i in model.T)
@@ -79,6 +84,8 @@ def task1_model():
     def reservoirLimit2(model):  # The water level cannot exceed V_max
         sum(model.v_res2[i][j] <= model.V_max for i in model.T for j in model.S)
     model.reservoirLimit2_constr = pyo.Constraint(rule=reservoirLimit2)
+
+    # TODO: Oppg C = Endre på ting og si fra hva jeg endret
 
     # Solver and solving the problem
     opt = SolverFactory('Gurobi')
