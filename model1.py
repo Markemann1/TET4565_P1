@@ -59,7 +59,7 @@ def task1_model():
 
     # ---------- Declaring constraints ----------
     def math_production1(model):  # production = water discharge * power equivalent
-        return sum(model.p1[t] == model.q1[t] * model.E_conv for t in model.T1)
+        return sum(model.p1[t] == model.q1[t] * model.E_conv for t in model.T1)  # TODO: sjekke med kæsp
     model.constr_productionDependency1 = pyo.Constraint(rule=math_production1)
 
     def math_production2(model):  # production = water discharge * power equivalent
@@ -73,6 +73,7 @@ def task1_model():
     def math_v_res2(model):  # water reservoir = init volume + inflow - discharge
         return sum(model.v_res2[t] == (model.IF_2 * s) - model.q2[t][s] for t in model.T2 for s in model.S)
     model.constr_math_v_res2 = pyo.Constraint(rule=math_v_res2)
+    model.v_res2[24].fixed = True
 
     # TODO: Oppg C = Endre på ting og si fra hva jeg endret
 
