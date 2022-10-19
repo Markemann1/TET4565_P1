@@ -36,44 +36,50 @@ def task1_model():
     model.E_conv = pyo.Param(initialize=E_conv)         # Conversion of power, p, produced pr. discarged water, q
     model.V_max = pyo.Param(initialize=V_max)           # Max water capacity in reservoir
     model.IF_1 = pyo.Param(initialize=IF_1)             # Inflow in stage 1, deterministic
-    model.IF_2 = pyo.Param(model.S, initialize=IF_2)    # Inflow in stage 2, stochastic
-    model.V_01 = pyo.Param(initialize=V_01)   # Initial water level t = 1
-    # TODO: Si at det ikke er lov å produsere i time 0? altså i 1. tidssteg
+    model.IF_2 = pyo.Param(initialize=IF_2)             # Inflow in stage 2, stochastic
+    model.V_01 = pyo.Param(initialize=V_01)             # Initial water level t = 1
+
     # ---------- Declaring decision variables ----------
     model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
-    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # TODO: mulig dette fikser startverdien
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # TODO: mulig dette fikser startverdien -- nei fix constr
 
     model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
     model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
-    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])  # TODO: Tror dette fikser startverdien
+    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])
 
     # ---------- Objective function ----------
     def objective(model):  # t - 1 fordi ikke null-indeksert
         o1 = sum(model.p1[t] * (model.MP + t) for t in model.T1)  # t=(1,24) production * market price
-        o2 = sum(sum(model.Prob * model.p2[t][s] * (model.MP + t) for t in model.T2) for s in model.S)  # t=(25,48) scenario probability * production(s) * market price
-        o3 = sum(model.WV * model.v_res2[48][s] for s in model.S)  # t=48 reservoir level * water value
+        o2 = sum(sum(model.Prob * model.p2[t, s] * (model.MP + t) for t in model.T2) for s in model.S)  # t=(25,48) scenario probability * production(s) * market price
+        o3 = sum(model.WV * model.v_res2[48, s] for s in model.S)  # t=48 reservoir level * water value
         obj = o1 + o2 + o3  # summing all profits
         return obj
     model.OBJ = pyo.Objective(rule=objective(model), sense=pyo.maximize)
 
     # ---------- Declaring constraints ----------
-    def math_production1(model):  # production = water discharge * power equivalent
-        return sum(model.p1[t] == model.q1[t] * model.E_conv for t in model.T1)  # TODO: sjekke med kæsp
-    model.constr_productionDependency1 = pyo.Constraint(rule=math_production1)
+    def math_production1(model, t):  # production = water discharge * power equivalent
+        return model.p1[t] == model.q1[t] * model.E_conv
+    model.constr_productionDependency1 = pyo.Constraint(model.T1, rule=math_production1)
 
-    def math_production2(model):  # production = water discharge * power equivalent
-        return sum(model.p2[t] == model.q2[t] * model.E_conv for t in model.T2)
-    model.constr_productionDependency2 = pyo.Constraint(rule=math_production2)
-    # TODO: Ta med if/else der t=første tid -> start reservoar nivå, else: vanlig matten
-    def math_v_res1(model):  # water reservoir = init volume + inflow - discharge
-        return sum(model.v_res1[t] == model.IF_1 - model.q1[t] for t in model.T1)
-    model.constr_math_v_res1 = pyo.Constraint(rule=math_v_res1)
+    def math_production2(model, t, s):  # production = water discharge * power equivalent
+        return model.p2[t, s] == model.q2[t, s] * model.E_conv
+    model.constr_productionDependency2 = pyo.Constraint(model.T2, model.S, rule=math_production2)
 
-    def math_v_res2(model):  # water reservoir = init volume + inflow - discharge
-        return sum(model.v_res2[t] == (model.IF_2 * s) - model.q2[t][s] for t in model.T2 for s in model.S)
-    model.constr_math_v_res2 = pyo.Constraint(rule=math_v_res2)
-    model.v_res2[24].fixed = True  # TODO: Er dette riktig? eller gjør det at det ikke er lov å produsere i t=24/25
+    def math_v_res1(model, t):  # water reservoir = init volume + inflow - discharge
+        if t == 1:
+            return model.v_res1[t] == model.V_01 + model.IF_1  # time index is what has happened up until t == [number]
+        else:
+            return model.v_res1[t] == model.v_res1[t-1] + model.IF_1 - model.q1[t]
+    model.constr_math_v_res1 = pyo.Constraint(model.T1, rule=math_v_res1)
+
+    def math_v_res2(model, t, s):  # water reservoir = init volume + inflow - discharge
+        if t == 25:
+            return model.v_res2[t, s] == model.v_res1[24] + (model.IF_2 * s)
+        else:
+            return model.v_res2[t, s] == model.v_res2[(t-1), s] + (model.IF_2 * s) - model.q2[t, s]
+    model.constr_math_v_res2 = pyo.Constraint(model.T2, model.S, rule=math_v_res2)
+    # model.v_res2[24].fixed = True
 
     # TODO: Oppg C = Endre på ting og si fra hva jeg endret
 
