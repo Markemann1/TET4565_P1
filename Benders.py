@@ -28,36 +28,73 @@ cuts_dict[iteration]['Constraint'] = 700-iteration
 """
 # ^ Noe notater fra Q&A timen ^
 
-def masterProblem("noe input, og dict/list of cuts elns"):
 
-    print("dette skal være et selvstendig optimeringsprogram")
+# Set data
+T1 = list(range(1, 25))  # Hour 1-24
+T2 = list(range(25, 49))  # Hour 25-48
+S = list(range(0, 5))  # Scenario 0-4
 
-    return "noe outputs som skal inn i subproblem"
+# Parameters data
+MP = 50  # Start-value of market price
+WV_end = 13000  # EUR/Mm^3
+prob = 0.2  # 1/5 pr scenario
+Q_max = 0.36  # Mm^3
+P_max = 100  # MW
+E_conv = 0.000000981  # MWh/Mm^3
+V_max = 10  # Mm^3
+IF_1 = 0.18  # Mm^3/h, Inflow Stage 1
+IF_2 = 0.09  # Mm^3/h, Inflow Stage 2
+V_01 = 5  # Mm^3, initial water level, Stage 1
 
-def subProblem("noe input som kommer fra masterProblem()"):
+#Useful dictionaries
+v_res1_data = {}
+Cuts_data = {}
+Premilimanry_results = {}
 
-    print("dette skal være et selvstendig optimeringsprogram")
+def masterProblem(Cuts_data):
 
-    return "noe output vi trenger i masterproblem ++ for å generere cuts"
+    "Declare sets"
+    "Declare parameters"
+    "Declare variables (define alpha with constraints -1000000 til +1000000"
+    "Objective function"
+    "constraints for stage 1 (add cuts from Cuts_data)"
+    "Solve problem and return reservoir level for t=24"
+    return(v_res1(24))
+
+def subProblem(v_res1(24)):
+    "Declare sets"
+    "Declare parameters"
+    "Declare variables"
+    "Objective function (Basically the same as task 1, without the first stage)"
+    "Constraints for stage 1+2 (here we will use v_res1(24) from masterproblem as a parameter"
+    "Solve Problem and return objective value and dual value for v_res1"
+    return(OBJ, dual )
 
 
-def generate_cuts("noe input fra subProblem() og en Xi fra masterProblem()"):
+def generate_cuts(OBJ, dual, v_res1_24):
+    "Make cut as a constraint for masterproblem"
+    "cut = OBJ + dual*(v_res1_next_iteration_(24) - v_res1(24) ) "
+    "Add/append cut to cuts_data"
 
 
-    return "trenger kanskje ikke returne noe. Skal appende det nye cuttet i liste av cuts"
+def Benders_loop():
 
+    for iteration in range(1,10):
 
-def Benders_loop("tror ikke den trenger input"):
-    "noe initialisering av list of cuts elns"
+        "Initiate masterproblem"
+        v_res1_24 = masterProblem(Cuts_data)
+        v_res1_data[iteration] = v_res1_24
 
-    for i in len(1,2,3,4,5,6,7,8,9):
-        "returns som kommer fra master a, b, c" = masterProblem("input")
+        "Initiate subproblem"
+        Premilimanry_results[iteration] = {}
+        for scen in range(3):
+            OBJ, Dual = subProblem(v_res1_24)
+            print("OBJ, Dual:", OBJ, dual)
+            Premilimanry_results[iteration][scen] = {"OBJ": OBJ, "Dual": dual, "v_res1": v_res1_24}
 
+        "Create cuts"
+        generate_cuts(OBJ, dual, v_res1_24)
 
-        Dual, OBJ = subProblem("problem init data", x_i)
-
-        generate_cuts(Xi, d, e, f)
-
-        print("noe greier så man kan se resultatene underveis")
+        print("This is Cut (", iteration,")")
 
 
