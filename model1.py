@@ -50,8 +50,8 @@ def task1_model():
 
     # ---------- Objective function ----------
     def objective(model):  # t - 1 fordi ikke null-indeksert
-        o1 = sum(model.p1[t] * (model.MP + t - 1) for t in model.T1)  # t=(1,24) production * market price
-        o2 = sum(model.Prob * model.p2[t][s] * (model.MP + t - 1) for t in model.T2 for s in model.S)  # t=(25,48) scenario probability * production(s) * market price
+        o1 = sum(model.p1[t] * (model.MP + t) for t in model.T1)  # t=(1,24) production * market price
+        o2 = sum(sum(model.Prob * model.p2[t][s] * (model.MP + t) for t in model.T2) for s in model.S)  # t=(25,48) scenario probability * production(s) * market price
         o3 = sum(model.WV * model.v_res2[48][s] for s in model.S)  # t=48 reservoir level * water value
         obj = o1 + o2 + o3  # summing all profits
         return obj
