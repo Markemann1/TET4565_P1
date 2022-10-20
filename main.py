@@ -1,7 +1,7 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 from model1 import task1_model
-from Benders import Benders_loop
+#from Benders import Benders_loop
 
 
 def main():
@@ -13,5 +13,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# MArkus er en python gud

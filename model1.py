@@ -43,17 +43,17 @@ def task1_model():
     # ---------- Declaring decision variables ----------
     model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
-    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # todo: må mulig fjernes
 
     model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
     model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
-    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])
+    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])  # todo: må mulig fjernes
 
     # ---------- Objective function ----------
     def objective(model):  # t - 1 fordi ikke null-indeksert
         o1 = sum(model.p1[t] * (model.MP + t) for t in model.T1)  # t=(1,24) production * market price
         o2 = sum(sum(model.Prob * model.p2[t, s] * (model.MP + t) for t in model.T2) for s in model.S)  # t=(25,48) scenario probability * production(s) * market price
-        o3 = sum(model.WV * model.v_res2[48, s] for s in model.S)  # t=48 reservoir level * water value
+        o3 = model.Prob * sum(model.WV * model.v_res2[48, s] for s in model.S)  # t=48 reservoir level * water value
         obj = o1 + o2 + o3  # summing all profits
         return obj
     model.OBJ = pyo.Objective(rule=objective(model), sense=pyo.maximize)
@@ -89,13 +89,12 @@ def task1_model():
     opt.solve(model)
     results = opt.solve(model, load_solutions=True)
 
-    # model.OBJ.display()
-    # model.v_res1.display()
-    # model.v_res2.display()
-    model.q1.display()
-    model.p1.display()
-    model.q2.display()
-    model.p2.display()
+    model.OBJ.display()
+    model.v_res1.display()
+    model.v_res2.display()
+    # model.q1.display()
+    # model.p1.display()
+    # model.q2.display()
+    # model.p2.display()
     #model.display()
     #model.dual.display()
-
