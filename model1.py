@@ -43,11 +43,11 @@ def task1_model():
     # ---------- Declaring decision variables ----------
     model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
-    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # todo: må mulig fjernes
 
     model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
     model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
-    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])
+    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])  # todo: må mulig fjernes
 
     # ---------- Objective function ----------
     def objective(model):  # t - 1 fordi ikke null-indeksert
