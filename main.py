@@ -17,3 +17,6 @@ if __name__ == '__main__':
 # MArkus er en python gud
 
 print("Varshan tester")
+
+print("aslkdjfnakjsdfnkasjdf")
+
