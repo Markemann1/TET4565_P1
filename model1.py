@@ -42,7 +42,7 @@ def task1_model():
     # ---------- Declaring decision variables ----------
     model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
-    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # TODO: mulig dette fikser startverdien -- nei fix constr
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)
 
     model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
     model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
@@ -79,12 +79,11 @@ def task1_model():
         else:
             return model.v_res2[t, s] == model.v_res2[(t-1), s] + (model.IF_2 * s) - model.q2[t, s]
     model.constr_math_v_res2 = pyo.Constraint(model.T2, model.S, rule=math_v_res2)
-    # model.v_res2[24].fixed = True
 
     # TODO: Oppg C = Endre på ting og si fra hva jeg endret
 
     # ---------- Solver and solving the problem ----------
-    opt = SolverFactory('Gurobi')
+    opt = SolverFactory('gurobi')
     model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(model)
     results = opt.solve(model, load_solutions=True)
