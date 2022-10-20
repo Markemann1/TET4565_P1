@@ -9,15 +9,16 @@ def task1_model():
     S = list(range(0, 5))       # Scenario 0-4
 
     # Parameters data
+    M3S_TO_MM3 = 3.6/1000   # Convesion factor to MM^3
     MP = 50                 # Start-value of market price
     WV_end = 13000          # EUR/Mm^3
     prob = 0.2              # 1/5 pr scenario
-    Q_max = 0.36            # Mm^3
-    P_max = 100             # MW
-    E_conv = 0.000000981    # MWh/Mm^3
+    Q_max = 100 * M3S_TO_MM3        # Mm^3
+    P_max = 100             # MW (over 1 hour)
+    E_conv = 0.981 / M3S_TO_MM3         # MWh/Mm^3
     V_max = 10              # Mm^3
-    IF_1 = 0.18             # Mm^3/h, Inflow Stage 1
-    IF_2 = 0.09             # Mm^3/h, Inflow Stage 2
+    IF_1 = 50 * M3S_TO_MM3             # Mm^3/h, Inflow Stage 1
+    IF_2 = 25 * M3S_TO_MM3             # Mm^3/h, Inflow Stage 2
     V_01 = 5                # Mm^3, initial water level, Stage 1
 
     model = pyo.ConcreteModel('Task 1b')
@@ -68,14 +69,14 @@ def task1_model():
 
     def math_v_res1(model, t):  # water reservoir = init volume + inflow - discharge
         if t == 1:
-            return model.v_res1[t] == model.V_01 + model.IF_1  # time index is what has happened up until t == [number]
+            return model.v_res1[t] == model.V_01 + model.IF_1 - model.q1[t]  # time index is what has happened up until t == [number]
         else:
             return model.v_res1[t] == model.v_res1[t-1] + model.IF_1 - model.q1[t]
     model.constr_math_v_res1 = pyo.Constraint(model.T1, rule=math_v_res1)
 
     def math_v_res2(model, t, s):  # water reservoir = init volume + inflow - discharge
         if t == 25:
-            return model.v_res2[t, s] == model.v_res1[24] + (model.IF_2 * s)
+            return model.v_res2[t, s] == model.v_res1[24] + (model.IF_2 * s) - model.q2[t, s]
         else:
             return model.v_res2[t, s] == model.v_res2[(t-1), s] + (model.IF_2 * s) - model.q2[t, s]
     model.constr_math_v_res2 = pyo.Constraint(model.T2, model.S, rule=math_v_res2)
