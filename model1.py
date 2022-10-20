@@ -98,4 +98,3 @@ def task1_model():
     # model.p2.display()
     #model.display()
     #model.dual.display()
-
