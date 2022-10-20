@@ -89,6 +89,13 @@ def task1_model():
     opt.solve(model)
     results = opt.solve(model, load_solutions=True)
 
-    model.display()
-    model.dual.display()
+    # model.OBJ.display()
+    # model.v_res1.display()
+    # model.v_res2.display()
+    model.q1.display()
+    model.p1.display()
+    model.q2.display()
+    model.p2.display()
+    #model.display()
+    #model.dual.display()
 
