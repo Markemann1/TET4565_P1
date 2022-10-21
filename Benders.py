@@ -201,10 +201,11 @@ def subProblem(v_res_t24, num_scenario):
     return modelSub.OBJ, modelSub.dual[v_res_start(1)]  # todo: usikker på om dette er sånn man tar ut dual verdien til en const
 
 
-def generate_cuts(OBJ, dual, v_res1, it):
-    b = OBJ - dual*v_res1
-    cut = {it: (dual, b, v_res1)}
-    Cuts_data.append(cut)
+def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
+
+    b = OBJ - dual * v_res1
+    cut = {it: {'a': dual, 'b': b}}  # 'x': v_res1: trenger ikke
+    dict_of_cuts.append(cut)
 
 
 def Benders_loop():
@@ -222,7 +223,7 @@ def Benders_loop():
         print(f'sub returned OBJ = {OBJ} and Dual = {Dual}')
 
         print('entering generate cuts')
-        generate_cuts(OBJ, Dual, v_res1_t24, iteration)
+        generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b, Vres/x = {dict_of_cuts[iteration]}')
 
 
