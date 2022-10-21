@@ -210,23 +210,23 @@ def generate_cuts(OBJ, dual, v_res1, it):
 
 
 def Benders_loop():
-    scen = 1 # oppgave b
-    for iteration in range(1,10):
+    num_scenario = 1  # oppgave b
+    dict_of_cuts = {}
+    iteration = 0
+    for iteration in range(1, 10):
 
-        "Initiate masterproblem"
-        v_res1_24 = masterProblem(Cuts_data)
-        v_res1_data[iteration] = v_res1_24
+        print('entering master')
+        v_res1_t24 = masterProblem(dict_of_cuts)
+        print(f'master returned {v_res1_t24}')
 
-        "Initiate subproblem"
-        Premilimanry_results[iteration] = {}
-        for scen in range(3):
-            OBJ, Dual = subProblem(v_res1_24)
-            print("OBJ, Dual:", OBJ, dual)
-            Premilimanry_results[iteration][scen] = {"OBJ": OBJ, "Dual": dual, "v_res1": v_res1_24}
+        print('entering sub')
+        OBJ, Dual = subProblem(v_res1_t24, num_scenario)
+        print(f'sub returned OBJ = {OBJ} and Dual = {Dual}')
 
-        "Create cuts"
-        generate_cuts(OBJ, dual, v_res1_24)
+        print('entering generate cuts')
+        generate_cuts(OBJ, Dual, v_res1_t24, iteration)
+        print(f' Dual/a, b, Vres/x = {dict_of_cuts[iteration]}')
 
-        print("This is Cut (", iteration,")")
+
 
 
