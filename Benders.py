@@ -92,16 +92,15 @@ def masterProblem(dict_of_cuts):
     mastermodel.V_01 = pyo.Param(initialize=V_01)
 
     # -------- Declaring decision variables -------
-    mastermodel.alpha = pyo.Var(mastermodel.T1, bounds=(-1000000, 1000000))
+    mastermodel.alpha = pyo.Var(bounds=(-1000000, 1000000))
     mastermodel.q1 = pyo.Var(mastermodel.T1, bounds=(0, Q_max))
     mastermodel.p1 = pyo.Var(mastermodel.T1, bounds=(0, P_max))
     mastermodel.v_res1 = pyo.Var(mastermodel.T1, bounds=(0, V_max), initialize=mastermodel.V_01)
 
     # -------- Declaring Objective function --------
     def objective(mastermodel):
-        o1 = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1)  # t=(1,24) production * market price
+        obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha  # t=(1,24) production * market price
 
-        obj = o1 + mastermodel.alpha
         return obj
     mastermodel.OBJ = pyo.Objective(rule=objective(mastermodel), sense=pyo.maximize )
 
@@ -177,7 +176,8 @@ def subProblem(v_res_t24, num_scenario):
     # ---------- Declaring decision variables ----------
     modelSub.q2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, Q_max))
     modelSub.p2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, P_max))
-    modelSub.v_res2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, V_max), initialize=modelSub.v_res1[24])  # todo: må mulig fjernes
+    modelSub.v_res2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, V_max))
+    modelSub.v_res_t24var = pyo.Var(bounds=(0, V_max))
 
     # ---------- Objective function ----------
     def objective(modelSub):
@@ -199,17 +199,19 @@ def subProblem(v_res_t24, num_scenario):
             return modelSub.v_res2[t, s] == modelSub.v_res2[(t-1), s] + (modelSub.IF_2 * s) - modelSub.q2[t, s]
     modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=math_v_res2)
 
-    def v_res_start(modelSub, t, s):
-        if t == 25:  # todo: må muligens legge inn en skip
-            return modelSub.v_res2[t, s] == modelSub.v_res_t24 + (modelSub.IF_2 * s) - modelSub.q2[t, s]
-        modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=v_res_start)
+    def v_res_start(modelSub, t):  #, t, s
+        if t == 24:  # todo: Her erre noe feil for fan
+            return modelSub.v_res_t24var == modelSub.v_res_t24
+        modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
+        #     return modelSub.v_res2[t, s] == modelSub.v_res_t24 + (modelSub.IF_2 * s) - modelSub.q2[t, s]
+        # modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=v_res_start)
 
     opt = SolverFactory('gurobi')
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(modelSub)
     results = opt.solve(modelSub, load_solutions=True)
 
-    return modelSub.OBJ, modelSub.dual[v_res_start(1)]  # todo: usikker på om dette er sånn man tar ut dual verdien til en const
+    return modelSub.OBJ, modelSub.dual[v_res_start(modelSub, 1)]  # todo: fikse constrainten og blæ
 
 
 def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
@@ -220,7 +222,7 @@ def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
 
 
 def Benders_loop():
-    num_scenario = 1  # oppgave b
+    num_scenario = 4  # oppgave b
     dict_of_cuts = {}
     iteration = 0
     for iteration in range(1, 10):
