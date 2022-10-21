@@ -79,6 +79,8 @@ def masterProblem(dict_of_cuts):
 
     # -------- Declaring sets ---------------------
     mastermodel.T1 = pyo.Set(initialize=T1)
+    # mastermodel.Cuts = pyo.Set(initialize=dict_of_cuts)
+    mastermodel.dict_of_cuts = dict_of_cuts
 
     # -------- Declaring parameters ---------------
     mastermodel.MP = pyo.Param(initialize=MP)
@@ -119,12 +121,21 @@ def masterProblem(dict_of_cuts):
 
 
     # TODO: Må fikse constriant som legger inn cuts
-    def alpha_cuts(mastermodel, ):
-        return(mastermodel.alpha <= "obj + dual*(v_res - v_rest24) ")
+    mastermodel.listOfCuts = pyo.ConstraintList()
+    for cut in range(len(dict_of_cuts)):  # todo: skal telle gjennom antall keys i dict of cuts
+        it = 1
+        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a']*mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
+        it += 1
+
 
     # TODO : Løse masterproblem og returnere rervoirnivå t=24
-    "Solve problem and return reservoir level for t=24"
-    return(v_res1(24))
+
+    opt = SolverFactory('gurobi')
+    mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
+    opt.solve(mastermodel)
+    results = opt.solve(mastermodel, load_solutions=True)
+
+    return(mastermodel.v_res1[24])
 
 def subProblem(v_res_t24, num_scenario):
 
