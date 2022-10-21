@@ -47,12 +47,12 @@ IF_1 = 50 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 1
 IF_2 = 25 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 2
 V_01 = 5  # Mm^3, initial water level, Stage 1
 
-#Useful dictionaries
-v_res1_data = {}
-Cuts_data = {}
-Premilimanry_results = {}
+# Useful dictionaries
+# v_res1_data = {}
+# Cuts_data = {}
+# Premilimanry_results = {}
 
-def masterProblem(Cuts_data):
+def masterProblem(dict_of_cuts):
     # Set data
     T1 = list(range(1, 25))  # Hour 1-24
     T2 = list(range(25, 49))  # Hour 25-48
@@ -128,15 +128,14 @@ def masterProblem(Cuts_data):
 
 def subProblem(v_res_t24, num_scenario):
 
-    # Set data
+    # ---------- Set data ----------
     T2 = list(range(25, 49))  # Hour 25-48
-
-    if num_scenario <= 1:
+    if num_scenario == 1:
         S = 3
     else:
         S = list(range(0, 5))  # Scenario 0-4
     
-    # Parameters data
+    # ---------- Parameters data ----------
     M3S_TO_MM3 = 3.6 / 1000  # Convesion factor to MM^3
     MP = 50  # Start-value of market price
     WV_end = 13000  # EUR/Mm^3
@@ -149,7 +148,6 @@ def subProblem(v_res_t24, num_scenario):
 
     modelSub = pyo.ConcreteModel()
 
-    # "Declare sets"
     # ---------- Declaring sets ----------
     modelSub.T2 = pyo.Set(initialize=T2)  # Last 24 hours, t
     modelSub.S = pyo.Set(initialize=S)  # Scenarios, s
@@ -166,7 +164,6 @@ def subProblem(v_res_t24, num_scenario):
     modelSub.v_res_t24 = pyo.Param(initialize=v_res_t24)
 
     # ---------- Declaring decision variables ----------
-
     modelSub.q2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, Q_max))
     modelSub.p2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, P_max))
     modelSub.v_res2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, V_max), initialize=modelSub.v_res1[24])  # todo: må mulig fjernes
@@ -178,7 +175,8 @@ def subProblem(v_res_t24, num_scenario):
         obj = o2 + o3
         return obj
     modelSub.OBJ = pyo.Objective(rule=objective(modelSub), sense=pyo.maximize)
-    
+
+    # ---------- Constraints ----------
     def math_production2(modelSub, t, s):  # production = water discharge * power equivalent
         return modelSub.p2[t, s] == modelSub.q2[t, s] * modelSub.E_conv
     modelSub.constr_productionDependency2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=math_production2)
@@ -200,7 +198,7 @@ def subProblem(v_res_t24, num_scenario):
     opt.solve(modelSub)
     results = opt.solve(modelSub, load_solutions=True)
 
-    return modelSub.OBJ, modelSub.dual[v_res_start]  # todo: usikker på om dette er sånn man tar ut dual verdien til en const
+    return modelSub.OBJ, modelSub.dual[v_res_start(1)]  # todo: usikker på om dette er sånn man tar ut dual verdien til en const
 
 
 def generate_cuts(OBJ, dual, v_res1_24):
@@ -210,23 +208,25 @@ def generate_cuts(OBJ, dual, v_res1_24):
 
 
 def Benders_loop():
-    scen = 1 # oppgave b
-    for iteration in range(1,10):
+    num_scenario = 1  # oppgave b
+    dict_of_cuts = {}
+    iteration = 0
+    for iteration in range(1, 10):
 
-        "Initiate masterproblem"
-        v_res1_24 = masterProblem(Cuts_data)
-        v_res1_data[iteration] = v_res1_24
+        print('entering master')
+        v_res1_t24 = masterProblem(dict_of_cuts)
+        print(f'master returned {v_res1_t24}')
 
-        "Initiate subproblem"
-        Premilimanry_results[iteration] = {}
-        for scen in range(3):
-            OBJ, Dual = subProblem(v_res1_24)
-            print("OBJ, Dual:", OBJ, dual)
-            Premilimanry_results[iteration][scen] = {"OBJ": OBJ, "Dual": dual, "v_res1": v_res1_24}
+        print('entering sub')
+        OBJ, Dual = subProblem(v_res1_t24, num_scenario)
+        print(f'sub returned OBJ = {OBJ} and Dual = {Dual}')
 
-        "Create cuts"
-        generate_cuts(OBJ, dual, v_res1_24)
+        print('entering generate cuts')
+        generate_cuts(OBJ, Dual, v_res1_t24, iteration)
+        print(f' Dual/a, b, Vres/x = {dict_of_cuts[iteration]}')
 
-        print("This is Cut (", iteration,")")
+        print(f'iteration: {iteration}, Objective value{OBJ}')
+
+
 
 
