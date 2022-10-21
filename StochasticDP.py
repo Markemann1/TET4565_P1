@@ -19,6 +19,4 @@ IF_1 = 50 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 1
 IF_2 = 25 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 2
 V_01 = 5  # Mm^3, initial water level, Stage 1
 
-
-
-
+print(skjdfnksjd)
