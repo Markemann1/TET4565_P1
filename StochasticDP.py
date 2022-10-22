@@ -1,5 +1,6 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
+import matplotlib.pyplot as plt
 
 
 def masterProblem(dict_of_cuts):
@@ -37,11 +38,9 @@ def masterProblem(dict_of_cuts):
     mastermodel.p1 = pyo.Var(mastermodel.T1, bounds=(0, P_max))
     mastermodel.v_res1 = pyo.Var(mastermodel.T1, bounds=(0, V_max), initialize=mastermodel.V_01)
 
-
     # -------- Declaring Objective function --------
     def objective(mastermodel):
-        obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha  # t=(1,24) production * market price
-
+        obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha  # todo: hva er denne alpha + greia?
         return obj
     mastermodel.OBJ = pyo.Objective(rule=objective(mastermodel), sense=pyo.maximize )
 
@@ -58,33 +57,29 @@ def masterProblem(dict_of_cuts):
             return mastermodel.v_res1[t] == mastermodel.v_res1[t - 1] + mastermodel.IF_1 - mastermodel.q1[t]
     mastermodel.constr_math_v_res1 = pyo.Constraint(mastermodel.T1, rule=math_v_res1)
 
-
-
-    # TODO: Må fikse constriant som legger inn cuts
+    # TODO: Funker denne som den skal?
     mastermodel.listOfCuts = pyo.ConstraintList()
     it = 0
-    for cut in range(len(dict_of_cuts)):  # todo: skal telle gjennom antall keys i dict of cuts
-        it += 1
-        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a']*mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
-
-
-
-    # TODO : Løse masterproblem og returnere rervoirnivå t=24
+    for cut in dict_of_cuts.keys():
+        it += 1  # todo: noe fryktelig rart skjer. Nøyaktig samme linje som Benders, men er gjemt inni enda et dict
+        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[cut][cut]['a'] * mastermodel.v_res1[24] + mastermodel.dict_of_cuts[cut][cut]['b'])
 
     opt = SolverFactory('gurobi')
     mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(mastermodel)
     results = opt.solve(mastermodel, load_solutions=True)
-    mastermodel.display()
 
-    return mastermodel.OBJ.value
+    obj_value = mastermodel.OBJ()
+    print('Total objective', obj_value)
+
+    return mastermodel.v_res1[24].value
 
 
 def subProblem(v_res_guess, num_scenario):
     # ---------- Set data ----------
     T2 = list(range(25, 49))  # Hour 25-48
     if num_scenario == 1:
-        S = 3
+        S = [2]
     else:
         S = list(range(0, 5))  # Scenario 0-4
 
@@ -120,7 +115,7 @@ def subProblem(v_res_guess, num_scenario):
     modelSub.q2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, Q_max))
     modelSub.p2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, P_max))
     modelSub.v_res2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, V_max))
-    modelSub.v_res_guessvar = pyo.Var(bounds=(0, V_max))
+    modelSub.v_res_guess_var = pyo.Var(bounds=(0, V_max))
 
     # ---------- Objective function ----------
     def objective(modelSub):
@@ -130,7 +125,6 @@ def subProblem(v_res_guess, num_scenario):
             modelSub.WV * modelSub.v_res2[48, s] for s in modelSub.S)  # t=48 reservoir level * water value
         obj = o2 + o3
         return obj
-
     modelSub.OBJ = pyo.Objective(rule=objective(modelSub), sense=pyo.maximize)
 
     # ---------- Constraints ----------
@@ -141,31 +135,33 @@ def subProblem(v_res_guess, num_scenario):
 
     def math_v_res2(modelSub, t, s):  # water reservoir = init volume + inflow - discharge
         if t == 25:
-            return modelSub.v_res2[t, s] == modelSub.v_res_guess + (modelSub.IF_2 * s) - modelSub.q2[t, s]
+            return modelSub.v_res2[t, s] == modelSub.v_res_guess_var + (modelSub.IF_2 * s) - modelSub.q2[t, s]
         else:
             return modelSub.v_res2[t, s] == modelSub.v_res2[(t - 1), s] + (modelSub.IF_2 * s) - modelSub.q2[t, s]
 
     modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=math_v_res2)
 
-    def v_res_start(modelSub, t):  # , t, s
-        if t == 24:  # todo: Her erre noe feil for fan
-            return modelSub.v_res_guessvar == modelSub.v_res_guess
-        modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
-        #     return modelSub.v_res2[t, s] == modelSub.v_res_guess + (modelSub.IF_2 * s) - modelSub.q2[t, s]
-        # modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=v_res_start)
+    def v_res_start(modelSub):
+        return modelSub.v_res_guess_var == modelSub.v_res_guess
+
+    modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
 
     opt = SolverFactory('gurobi')
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(modelSub)
     results = opt.solve(modelSub, load_solutions=True)
 
-    return modelSub.OBJ, modelSub.dual[v_res_start(modelSub, 1).value]  # todo: fikse constrainten og blæ
+    obj_value = modelSub.OBJ()
+    dual_value = modelSub.dual.getValue(
+        modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
+
+    return obj_value, dual_value
 
 
 def generate_cuts(v_res_guess, OBJ, Dual, dict_of_cuts, iterator):
     b = OBJ - Dual * v_res_guess
     cut = {iterator: {'a': Dual, 'b': b}}  # 'x': v_res1: trenger ikke
-    dict_of_cuts.append(cut)
+    dict_of_cuts[iterator] = cut
     return
 
 
@@ -173,8 +169,8 @@ def SDP_loop():
     list_of_guess = [1, 2, 3, 4, 5, 6, 7, 8, 9]  # 1-9
     dict_of_cuts = {}
     iterator = 0
-    num_scenario = 1
-    for guess in range(list_of_guess):
+    num_scenario = 5
+    for guess in list_of_guess:
         print(f'Entering subproblem for the {guess} time')
         OBJ, Dual = subProblem(guess, num_scenario)
 
