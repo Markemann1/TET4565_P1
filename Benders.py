@@ -97,6 +97,7 @@ def masterProblem(dict_of_cuts):
     mastermodel.p1 = pyo.Var(mastermodel.T1, bounds=(0, P_max))
     mastermodel.v_res1 = pyo.Var(mastermodel.T1, bounds=(0, V_max), initialize=mastermodel.V_01)
 
+
     # -------- Declaring Objective function --------
     def objective(mastermodel):
         obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha  # t=(1,24) production * market price
@@ -121,10 +122,11 @@ def masterProblem(dict_of_cuts):
 
     # TODO: Må fikse constriant som legger inn cuts
     mastermodel.listOfCuts = pyo.ConstraintList()
+    it = 0
     for cut in range(len(dict_of_cuts)):  # todo: skal telle gjennom antall keys i dict of cuts
-        it = 1
-        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a']*mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
         it += 1
+        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a']*mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
+
 
 
     # TODO : Løse masterproblem og returnere rervoirnivå t=24
@@ -133,8 +135,8 @@ def masterProblem(dict_of_cuts):
     mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(mastermodel)
     results = opt.solve(mastermodel, load_solutions=True)
-
-    return(mastermodel.v_res1[24])
+    mastermodel.display()
+    return mastermodel.v_res1[24].value
 
 def subProblem(v_res_t24, num_scenario):
 
@@ -211,7 +213,7 @@ def subProblem(v_res_t24, num_scenario):
     opt.solve(modelSub)
     results = opt.solve(modelSub, load_solutions=True)
 
-    return modelSub.OBJ, modelSub.dual[v_res_start(modelSub, 1)]  # todo: fikse constrainten og blæ
+    return modelSub.OBJ, modelSub.dual[v_res_start(modelSub, 1).value]  # todo: fikse constrainten og blæ
 
 
 def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
