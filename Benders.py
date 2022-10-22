@@ -117,7 +117,7 @@ def masterProblem(dict_of_cuts):
         else:
             return mastermodel.v_res1[t] == mastermodel.v_res1[t - 1] + mastermodel.IF_1 - mastermodel.q1[t]
     mastermodel.constr_math_v_res1 = pyo.Constraint(mastermodel.T1, rule=math_v_res1)
-
+                   hjhghhhgh
 
 
     # TODO: Må fikse constriant som legger inn cuts
