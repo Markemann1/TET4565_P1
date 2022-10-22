@@ -1,62 +1,11 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
+import matplotlib.pyplot as plt
 
-"""
-cuts_dict = {}  # dict i dict: cut 0: {'slope':(a), 'constant':(b)} for alle cuts
-
-modelSub = pyo.ConcreteModel()
-
-modelSub.Alpha = pyo.Var()
-
-modelSub.Cuts = pyo.Set(initialize=List_of_cuts)  # må være en liste m/antall så den vet hvor mange
-modelSub.Cuts.display()
-
-modelSub.cuts_dict = cuts_dict
-
-def constraint_cuts(modelSub, cut):
-    # sjekk og print ogsånt
-    print(modelSub.cut_dict[cut]['Slope'], modelSub.cut_dict[cut]['Constant'])
-    print(f'creating cut: {cut}')
-    return modelSub.Alpha == 2
-modelSub.cut_constraint = pyo.Constraint(modelSub.Cuts, rule = constraint_cuts)  # Kan kjøre pyo.Constraint(modelSub.Cuts, modelSub.Cuts [...]
-
-# --- Funksjon "generate cuts" --- denne er fejjjl
-List_of_cuts.append(iteration)
-cuts_dict[iteration] = {}
-cuts_dict[iteration]['Slope'] = 30*iteration
-cuts_dict[iteration]['Constraint'] = 700-iteration
-"""
-# ^ Noe notater fra Q&A timen ^
-
-
-# Set data
-T1 = list(range(1, 25))  # Hour 1-24
-T2 = list(range(25, 49))  # Hour 25-48
-S = list(range(0, 5))  # Scenario 0-4
-
-# Parameters data
-M3S_TO_MM3 = 3.6 / 1000  # Convesion factor to MM^3
-MP = 50  # Start-value of market price
-WV_end = 13000  # EUR/Mm^3
-prob = 0.2  # 1/5 pr scenario
-Q_max = 100 * M3S_TO_MM3  # Mm^3
-P_max = 100  # MW (over 1 hour)
-E_conv = 0.981 / M3S_TO_MM3  # MWh/Mm^3
-V_max = 10  # Mm^3
-IF_1 = 50 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 1
-IF_2 = 25 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 2
-V_01 = 5  # Mm^3, initial water level, Stage 1
-
-# Useful dictionaries
-# v_res1_data = {}
-# Cuts_data = {}
-# Premilimanry_results = {}
 
 def masterProblem(dict_of_cuts):
     # Set data
     T1 = list(range(1, 25))  # Hour 1-24
-    T2 = list(range(25, 49))  # Hour 25-48
-    S = list(range(0, 5))  # Scenario 0-4
 
     # Parameters data
     M3S_TO_MM3 = 3.6 / 1000  # Convesion factor to MM^3
@@ -100,7 +49,7 @@ def masterProblem(dict_of_cuts):
 
     # -------- Declaring Objective function --------
     def objective(mastermodel):
-        obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha  # t=(1,24) production * market price
+        obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha  # todo: hva er denne + alpha?
 
         return obj
     mastermodel.OBJ = pyo.Objective(rule=objective(mastermodel), sense=pyo.maximize )
@@ -118,18 +67,13 @@ def masterProblem(dict_of_cuts):
             return mastermodel.v_res1[t] == mastermodel.v_res1[t - 1] + mastermodel.IF_1 - mastermodel.q1[t]
     mastermodel.constr_math_v_res1 = pyo.Constraint(mastermodel.T1, rule=math_v_res1)
 
-
-
-    # TODO: Må fikse constriant som legger inn cuts
+    # TODO: Funker denne som den skal?
     mastermodel.listOfCuts = pyo.ConstraintList()
     it = 0
-    for cut in range(len(dict_of_cuts)):  # todo: skal telle gjennom antall keys i dict of cuts
+    for cut in range(len(dict_of_cuts)):  # todo: funker denne som den skal?
         it += 1
-        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a']*mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
+        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a'] * mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
 
-
-
-    # TODO : Løse masterproblem og returnere rervoirnivå t=24
 
     opt = SolverFactory('gurobi')
     mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
@@ -140,6 +84,7 @@ def masterProblem(dict_of_cuts):
     print('Total objective', obj_value)
 
     return mastermodel.v_res1[24].value
+
 
 def subProblem(v_res_t24, num_scenario):
 
@@ -204,12 +149,9 @@ def subProblem(v_res_t24, num_scenario):
             return modelSub.v_res2[t, s] == modelSub.v_res2[(t-1), s] + (modelSub.IF_2 * s) - modelSub.q2[t, s]
     modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=math_v_res2)
 
-    def v_res_start(modelSub):  #, t, s
+    def v_res_start(modelSub):
         return modelSub.v_res_t24_var == modelSub.v_res_t24
-
     modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
-
-
 
     opt = SolverFactory('gurobi')
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
@@ -217,9 +159,9 @@ def subProblem(v_res_t24, num_scenario):
     results = opt.solve(modelSub, load_solutions=True)
 
     obj_value = modelSub.OBJ()
-    dual_value = modelSub.dual.getValue(modelSub.constr_dualvalue)
+    dual_value = modelSub.dual.getValue(modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
 
-    return obj_value, dual_value  # todo: fikse constrainten og blæ
+    return obj_value, dual_value
 
 
 def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
@@ -227,12 +169,6 @@ def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
     b = OBJ - dual * v_res1
     cut = {'a': dual, 'b': b}
     dict_of_cuts[it] = cut
-
-
-
-    # cut = []
-    # cut = {it: {'a': dual, 'b': b}}  # 'x': v_res1: trenger ikke
-    # dict_of_cuts.append(cut)
 
 
 def Benders_loop():
@@ -253,8 +189,6 @@ def Benders_loop():
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
 
-
-
-
-
+        if dict_of_cuts[iteration]['a'] == dict_of_cuts[iteration-1]['a'] and dict_of_cuts[iteration]['b'] == dict_of_cuts[iteration-1]['b']:
+            print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker.
 
