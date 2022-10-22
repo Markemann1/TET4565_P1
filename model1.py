@@ -44,11 +44,12 @@ def task1_model():
     # ---------- Declaring decision variables ----------
     model.q1 = pyo.Var(model.T1, bounds=(0, Q_max))
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))
-    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max), initialize=model.V_01)  # todo: må mulig fjernes
-
+    model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max))  # todo: fjernet initialize=startverdi, fucket det opp ting?
+                                                        # initialize=model.V_01
     model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))
     model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))
-    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max), initialize=model.v_res1[24])  # todo: må mulig fjernes
+    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max))  # todo: fjernet initialize=startverdi, fucket det opp ting?
+                                                            # , initialize=model.v_res1[24]
 
     # ---------- Objective function ----------
     def objective(model):  # t - 1 fordi ikke null-indeksert
@@ -82,7 +83,8 @@ def task1_model():
             return model.v_res2[t, s] == model.v_res2[(t-1), s] + (model.IF_2 * s) - model.q2[t, s]
     model.constr_math_v_res2 = pyo.Constraint(model.T2, model.S, rule=math_v_res2)
 
-    # TODO: Oppg C = Endre på ting og si fra hva jeg endret
+    # TODO: Oppg C = Endre på ting og si fra hva jeg endret - kommenter hvordan det endrer
+    # todo: forslag: inflow, WV_end. KANSKJE sannsynlighet, men da må vi oppdatere Parameter_sannsynlighet -> liste, og oppdatere o3 i OBJ
 
     # ---------- Solver and solving the problem ----------
     opt = SolverFactory('gurobi')
@@ -93,12 +95,6 @@ def task1_model():
     model.OBJ.display()
     model.v_res1.display()
     model.v_res2.display()
-    # model.q1.display()
-    # model.p1.display()
-    # model.q2.display()
-    # model.p2.display()
-    #model.display()
-    #model.dual.display()
 
     # Varshan tester ut plotting av graf under her
     resultat = []
@@ -107,7 +103,6 @@ def task1_model():
     s3_plot = []
     s4_plot = []
     s0_plot = []
-
 
     for x in T1:
         y = model.v_res1[x].value
@@ -131,7 +126,6 @@ def task1_model():
         y_4 = model.v_res2[(x_2, 4)].value
         s4_plot.append(y_4)
 
-
     print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
 
     plt.plot(T1,resultat)
@@ -145,7 +139,7 @@ def task1_model():
     plt.ylabel("Water value")
     plt.grid(
         linestyle = '--'
-             ) #            TODO: Trengs kanskje ikke men kan fjernes senere.
+             )  # TODO: Trengs kanskje ikke men kan fjernes senere.
     plt.show()
     print(resultat)
 
