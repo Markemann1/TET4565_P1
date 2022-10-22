@@ -1,5 +1,6 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
+import matplotlib.pyplot as plt
 
 
 def task1_model():
@@ -98,3 +99,42 @@ def task1_model():
     # model.p2.display()
     #model.display()
     #model.dual.display()
+
+    # Varshan tester ut plotting av graf under her
+    resultat = []
+    s1_plot = []
+    s2_plot = []
+    s3_plot = []
+    s4_plot = []
+    s0_plot = []
+
+
+    for x in T1:
+        y = model.v_res1[x].value
+        resultat.append(y)
+
+  #  print(model.v_res2[(25, 0)].value)
+
+    for x_2 in range(24,48):
+        y = model.v_res2[(25,0)].value
+        print(y,x_2)
+        s0_plot.append(y)
+
+    print(s0_plot)
+
+    plt.plot(T1,resultat)
+    plt.title("Her kommer tittel")
+    plt.xlabel("Time")
+    plt.ylabel("Water value")
+    plt.grid(
+        linestyle = '--'
+             ) #            TODO: Trengs kanskje ikke men kan fjernes senere.
+    plt.show()
+    print(resultat)
+
+
+#  def plotgraf(y_list):
+#      for x in range (25):
+#          for y in model.vres1:
+#              print(model.vres1)
+#      print(model)
