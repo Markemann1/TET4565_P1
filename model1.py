@@ -115,14 +115,31 @@ def task1_model():
 
   #  print(model.v_res2[(25, 0)].value)
 
-    for x_2 in range(24,48):
-        y = model.v_res2[(25,0)].value
-        print(y,x_2)
-        s0_plot.append(y)
+    for x_2 in range(25,49):
+        y_0 = model.v_res2[(x_2,0)].value
+        s0_plot.append(y_0)
 
-    print(s0_plot)
+        y_1 = model.v_res2[(x_2, 1)].value
+        s1_plot.append(y_1)
+
+        y_2 = model.v_res2[(x_2, 2)].value
+        s2_plot.append(y_2)
+
+        y_3 = model.v_res2[(x_2, 3)].value
+        s3_plot.append(y_3)
+
+        y_4 = model.v_res2[(x_2, 4)].value
+        s4_plot.append(y_4)
+
+
+    print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
 
     plt.plot(T1,resultat)
+    plt.plot(T2,s0_plot)
+    plt.plot(T2, s1_plot)
+    plt.plot(T2, s2_plot)
+    plt.plot(T2, s3_plot)
+    plt.plot(T2, s4_plot)
     plt.title("Her kommer tittel")
     plt.xlabel("Time")
     plt.ylabel("Water value")
