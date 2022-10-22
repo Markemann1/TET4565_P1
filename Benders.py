@@ -64,9 +64,9 @@ def masterProblem(dict_of_cuts):
     # TODO: Funker denne som den skal?
     mastermodel.listOfCuts = pyo.ConstraintList()
     it = 0
-    for cut in range(len(dict_of_cuts)):  # todo: funker denne som den skal?
-        it += 1
-        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[it]['a'] * mastermodel.v_res1[24] + mastermodel.dict_of_cuts[it]['b'])
+    for cut in dict_of_cuts.keys():  # todo: funker denne som den skal?
+        it += 1  # todo: lurer på om denne ikke får med det første cutets ['a'] og ['b'] verdier
+        mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[cut]['a'] * mastermodel.v_res1[24] + mastermodel.dict_of_cuts[cut]['b'])
 
 
     opt = SolverFactory('gurobi')
@@ -183,6 +183,6 @@ def Benders_loop():
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
 
-        if dict_of_cuts[iteration]['a'] == dict_of_cuts[iteration-1]['a'] and dict_of_cuts[iteration]['b'] == dict_of_cuts[iteration-1]['b']:
-            print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker.
+        # if dict_of_cuts[iteration]['a'] == dict_of_cuts[iteration-1]['a'] and dict_of_cuts[iteration]['b'] == dict_of_cuts[iteration-1]['b']:
+        #     print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker.
 
