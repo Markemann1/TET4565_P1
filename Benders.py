@@ -135,7 +135,10 @@ def masterProblem(dict_of_cuts):
     mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(mastermodel)
     results = opt.solve(mastermodel, load_solutions=True)
-    mastermodel.display()
+
+    obj_value = mastermodel.OBJ()
+    print('Total objective', obj_value)
+
     return mastermodel.v_res1[24].value
 
 def subProblem(v_res_t24, num_scenario):
@@ -143,7 +146,7 @@ def subProblem(v_res_t24, num_scenario):
     # ---------- Set data ----------
     T2 = list(range(25, 49))  # Hour 25-48
     if num_scenario == 1:
-        S = 3
+        S = [2]
     else:
         S = list(range(0, 5))  # Scenario 0-4
     
@@ -179,7 +182,7 @@ def subProblem(v_res_t24, num_scenario):
     modelSub.q2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, Q_max))
     modelSub.p2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, P_max))
     modelSub.v_res2 = pyo.Var(modelSub.T2, modelSub.S, bounds=(0, V_max))
-    modelSub.v_res_t24var = pyo.Var(bounds=(0, V_max))
+    modelSub.v_res_t24_var = pyo.Var(bounds=(0, V_max))
 
     # ---------- Objective function ----------
     def objective(modelSub):
@@ -196,35 +199,44 @@ def subProblem(v_res_t24, num_scenario):
     
     def math_v_res2(modelSub, t, s):  # water reservoir = init volume + inflow - discharge
         if t == 25:
-            return modelSub.v_res2[t, s] == modelSub.v_res_t24 + (modelSub.IF_2 * s) - modelSub.q2[t, s]
+            return modelSub.v_res2[t, s] == modelSub.v_res_t24_var + (modelSub.IF_2 * s) - modelSub.q2[t, s]
         else:
             return modelSub.v_res2[t, s] == modelSub.v_res2[(t-1), s] + (modelSub.IF_2 * s) - modelSub.q2[t, s]
     modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=math_v_res2)
 
-    def v_res_start(modelSub, t):  #, t, s
-        if t == 24:  # todo: Her erre noe feil for fan
-            return modelSub.v_res_t24var == modelSub.v_res_t24
-        modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
-        #     return modelSub.v_res2[t, s] == modelSub.v_res_t24 + (modelSub.IF_2 * s) - modelSub.q2[t, s]
-        # modelSub.constr_math_v_res2 = pyo.Constraint(modelSub.T2, modelSub.S, rule=v_res_start)
+    def v_res_start(modelSub):  #, t, s
+        return modelSub.v_res_t24_var == modelSub.v_res_t24
+
+    modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
+
+
 
     opt = SolverFactory('gurobi')
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(modelSub)
     results = opt.solve(modelSub, load_solutions=True)
 
-    return modelSub.OBJ, modelSub.dual[v_res_start(modelSub, 1).value]  # todo: fikse constrainten og blæ
+    obj_value = modelSub.OBJ()
+    dual_value = modelSub.dual.getValue(modelSub.constr_dualvalue)
+
+    return obj_value, dual_value  # todo: fikse constrainten og blæ
 
 
 def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
 
     b = OBJ - dual * v_res1
-    cut = {it: {'a': dual, 'b': b}}  # 'x': v_res1: trenger ikke
-    dict_of_cuts.append(cut)
+    cut = {'a': dual, 'b': b}
+    dict_of_cuts[it] = cut
+
+
+
+    # cut = []
+    # cut = {it: {'a': dual, 'b': b}}  # 'x': v_res1: trenger ikke
+    # dict_of_cuts.append(cut)
 
 
 def Benders_loop():
-    num_scenario = 4  # oppgave b
+    num_scenario = 1  # oppgave b
     dict_of_cuts = {}
     iteration = 0
     for iteration in range(1, 10):
@@ -239,7 +251,9 @@ def Benders_loop():
 
         print('entering generate cuts')
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
-        print(f' Dual/a, b, Vres/x = {dict_of_cuts[iteration]}')
+        print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
+
+
 
 
 
