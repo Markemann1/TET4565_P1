@@ -17,12 +17,6 @@ def masterProblem(dict_of_cuts):
     IF_1 = 50 * M3S_TO_MM3  # Mm^3/h, Inflow Stage 1
     V_01 = 5  # Mm^3, initial water level, Stage 1
 
-    # Useful dictionaries
-
-    v_res1_data = {}
-    Cuts_data = {}
-    Premilimanry_results = {}
-
     # -------- Initiate masterproblem -------------
     mastermodel = pyo.ConcreteModel()
 
