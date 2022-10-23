@@ -77,10 +77,17 @@ def masterProblem(dict_of_cuts):
     obj_value = mastermodel.OBJ()
     print('Total objective', obj_value)
 
+    resultat = [] #Plotting av graf
+    for x in T1:
+        y = mastermodel.v_res1[x].value
+        resultat.append(y)
+
+    # plt.plot(T1, resultat)
+
     return mastermodel.v_res1[24].value
 
 
-def subProblem(v_res_t24, num_scenario):
+def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO Liste i liste?
 
     # ---------- Set data ----------
     T2 = list(range(25, 49))  # Hour 25-48
@@ -155,6 +162,45 @@ def subProblem(v_res_t24, num_scenario):
     obj_value = modelSub.OBJ()
     dual_value = modelSub.dual.getValue(modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
 
+    s1_plot = [] #TODO Varshan
+    s2_plot = []
+    s3_plot = []
+    s4_plot = []
+    s0_plot = []
+
+    print("Her kommer resultatene du vil skrive ut:", modelSub.v_res2[25,1].value )
+
+    for x_2 in range(25, 49):
+        y_0 = modelSub.v_res2[(x_2, 0)].value
+        s0_plot.append(y_0)
+        LS_0.append(y_0)
+
+        y_1 = modelSub.v_res2[(x_2, 1)].value
+        s1_plot.append(y_1)
+        LS_1.append(y_1)
+
+        y_2 = modelSub.v_res2[(x_2, 2)].value
+        s2_plot.append(y_2)
+        LS_2.append(y_2)
+
+        y_3 = modelSub.v_res2[(x_2, 3)].value
+        s3_plot.append(y_3)
+        LS_3.append(y_3)
+
+        y_4 = modelSub.v_res2[(x_2, 4)].value
+        s4_plot.append(y_4)
+        LS_4.append(y_4)
+
+    #print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
+
+    #plt.plot(T2,s0_plot,  color="blue")
+    #plt.plot(T2, s1_plot,  color="pink")
+    #plt.plot(T2, s2_plot, color="green")
+    #plt.plot(T2, s3_plot, color = "cyan")
+    #plt.plot(T2, s4_plot, color = "red")
+
+    print(s1_plot)
+
     return obj_value, dual_value
 
 
@@ -166,8 +212,16 @@ def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
 
 
 def Benders_loop():
-    num_scenario = 1  # oppgave b
+    num_scenario = 5  # oppgave b
     dict_of_cuts = {}
+    LS_0 = []
+    LS_1 = []
+    LS_2 = []
+    LS_3 = []
+    LS_4 = []
+    T2 = list(range(25,49))
+
+
     iteration = 0
     for iteration in range(1, 10):
 
@@ -176,13 +230,32 @@ def Benders_loop():
         print(f'master returned {v_res1_t24}')
 
         print('entering sub')
-        OBJ, Dual = subProblem(v_res1_t24, num_scenario)
+        OBJ, Dual = subProblem(v_res1_t24, num_scenario,LS_0,LS_1, LS_2, LS_3, LS_4)
         print(f'sub returned OBJ = {OBJ} and Dual = {Dual}')
 
         print('entering generate cuts')
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
 
+    print("Her er tabell med L0!", LS_0)
+    print("Her er tabell med L1!", LS_1)
+    print("Her er tabell med L2!", LS_2)
+    print("Her er tabell med L3!", LS_3)
+    print("Her er tabell med L4!", LS_4)
+
+    plt.plot(T2, LS_0[-24:], color="blue")
+    plt.plot(T2, LS_1[-24:], color="pink")
+    plt.plot(T2, LS_2[-24:], color="green")
+    plt.plot(T2, LS_3[-24:], color="cyan")
+    plt.plot(T2, LS_4[-24:], color="red")
         # if dict_of_cuts[iteration]['a'] == dict_of_cuts[iteration-1]['a'] and dict_of_cuts[iteration]['b'] == dict_of_cuts[iteration-1]['b']:
         #     print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker.
 
+    # plotting av graf under
+    plt.title("Oppgave 2")
+    plt.xlabel("Time")
+    plt.ylabel("Water value")
+    plt.grid(
+        linestyle = '--'
+             )
+    plt.show()
