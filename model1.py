@@ -46,9 +46,9 @@ def task1_model():
     model.p1 = pyo.Var(model.T1, bounds=(0, P_max))         # variable for production of power in T1
     model.v_res1 = pyo.Var(model.T1, bounds=(0, V_max))     # variable for reservoir level in T1
 
-    model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))        # variable of discharged water from reservoir in T1
-    model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))        # variable for production of power in T1
-    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max))    # variable for reservoir level in T1
+    model.q2 = pyo.Var(model.T2, model.S, bounds=(0, Q_max))        # variable of discharged water from reservoir in T2 pr. scenario
+    model.p2 = pyo.Var(model.T2, model.S, bounds=(0, P_max))        # variable for production of power in T2 pr. scenario
+    model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max))    # variable for reservoir level in T2 pr. scenario
 
     # ---------- Objective function ----------
     def objective(model):       # todo: skal vi ha t-1 i ( model.MP + t) *p1 med vår behandling av tid?
