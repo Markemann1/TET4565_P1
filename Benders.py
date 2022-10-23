@@ -135,7 +135,7 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
     modelSub.v_res_t24_var = pyo.Var(bounds=(0, V_max))                     # complicating variable, v_res[24] from the master problem
 
     # ---------- Objective function ----------
-    def objective(modelSub):
+    def objective(modelSub):  # todo: dette og evt SDP; legge til en if num_scenario == 1, ikke gang med sannsynlighet
         o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
                  modelSub.S)    # profits for T2 for rach scenario * probability
         o3 = modelSub.Prob * sum(
