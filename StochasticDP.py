@@ -75,7 +75,7 @@ def masterProblem(dict_of_cuts):
     obj_value = mastermodel.OBJ()
     print('Total objective', obj_value)
 
-    return mastermodel.v_res1[24].value
+    return mastermodel.v_res1[24].value  # todo: kan fjerne verdien den returnerer
 
 
 def subProblem(v_res_guess, num_scenario):
