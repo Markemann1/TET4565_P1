@@ -160,7 +160,7 @@ def subProblem(v_res_guess, num_scenario):
     results = opt.solve(modelSub, load_solutions=True)
 
     obj_value = modelSub.OBJ()
-    dual_value = modelSub.dual.getValue(modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
+    dual_value = modelSub.dual.get(modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
 
     return obj_value, dual_value  # returning the OBJ and dual of v_res_start constraint to be used in cut generation
 
@@ -183,7 +183,7 @@ def SDP_loop():
     list_of_guess = [1, 2, 3, 4, 5, 6, 7, 8, 9]     # for v_res value to be put into the Subproblem
     dict_of_cuts = {}                               # dictionary to keep the cuts
     iterator = 0                                    # to organize the dict cut keys
-    num_scenario = 1                                # to set number of scenario's in the subproblem
+    num_scenario = 4                                # to set number of scenario's in the subproblem
     for guess in list_of_guess:
         print(f'Entering subproblem for the {guess} time')
         OBJ, Dual = subProblem(guess, num_scenario)     # getting the OBJ and dual from v_res guess-list
