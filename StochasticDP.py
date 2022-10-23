@@ -154,8 +154,10 @@ def subProblem(v_res_guess, num_scenario):
 
 
     # ---------- Initializing solver and solving the problem ----------
-    SolverFactory('gurobi').solve(modelSub)
+    opt = SolverFactory('gurobi')
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
+    opt.solve(modelSub)
+    results = opt.solve(modelSub, load_solutions=True)
 
     obj_value = modelSub.OBJ()
     dual_value = modelSub.dual.getValue(modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
