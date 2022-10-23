@@ -87,12 +87,13 @@ def task1_model():
 
     # ---------- Initializing solver and solving the problem ----------
     SolverFactory('gurobi').solve(model)
-    model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
+    model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)  # getting the dual of the problem # todo: kanskje fjerne, siden vi ikke trenger den
 
     model.OBJ.display()  # todo: fjerne / rydde / endre hva som vises - forholde oss til bare plots kanskje?
     model.v_res1.display()
     model.v_res2.display()
 
+    # todo: rydde og forklare litt kanskje
     # Varshan tester ut plotting av graf under her
     resultat = []
     s1_plot = []
