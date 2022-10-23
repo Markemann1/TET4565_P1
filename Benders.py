@@ -63,11 +63,8 @@ def masterProblem(dict_of_cuts):
 
     # TODO: Funker denne som den skal?
     mastermodel.listOfCuts = pyo.ConstraintList()
-    it = 0
     for cut in dict_of_cuts.keys():  # todo: funker denne som den skal?
-        it += 1  # todo: lurer på om denne ikke får med det første cutets ['a'] og ['b'] verdier
         mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[cut]['a'] * mastermodel.v_res1[24] + mastermodel.dict_of_cuts[cut]['b'])
-
 
     opt = SolverFactory('gurobi')
     mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
@@ -154,7 +151,7 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
         return modelSub.v_res_t24_var == modelSub.v_res_t24
     modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
 
-    opt = SolverFactory('gurobi')
+    opt = SolverFactory('gurobi')  # todo: rydde ..solve(model) her og slette results
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     opt.solve(modelSub)
     results = opt.solve(modelSub, load_solutions=True)
