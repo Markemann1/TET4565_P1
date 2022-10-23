@@ -152,7 +152,6 @@ def subProblem(v_res_guess, num_scenario):
         return modelSub.v_res_guess_var == modelSub.v_res_guess
     modelSub.constr_dualvalue = pyo.Constraint(rule=v_res_start)
 
-
     # ---------- Initializing solver and solving the problem ----------
     opt = SolverFactory('gurobi')
     modelSub.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
@@ -160,7 +159,7 @@ def subProblem(v_res_guess, num_scenario):
     results = opt.solve(modelSub, load_solutions=True)
 
     obj_value = modelSub.OBJ()
-    dual_value = modelSub.dual.get(modelSub.constr_dualvalue)  # todo: warning sier at vi kan bruke dual.get fremfor dual.getValue
+    dual_value = modelSub.dual.get(modelSub.constr_dualvalue)
 
     return obj_value, dual_value  # returning the OBJ and dual of v_res_start constraint to be used in cut generation
 
