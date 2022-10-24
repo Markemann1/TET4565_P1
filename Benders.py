@@ -81,7 +81,7 @@ def masterProblem(dict_of_cuts):
         y = mastermodel.v_res1[x].value
         resultat.append(y)
 
-    # plt.plot(T1, resultat)
+    plt.plot(T1, resultat)
 
     return mastermodel.v_res1[24].value  # todo: kan fjerne verdien den returnerer
 
@@ -175,7 +175,7 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
     s4_plot = []
     s0_plot = []
 
-    print("Her kommer resultatene du vil skrive ut:", modelSub.v_res2[25,1].value )
+    print("Her kommer resultatene du vil skrive ut:", modelSub.v_res2[25,1].value ) #todo denne kan fjernes når test er ferdig.
 
     for x_2 in range(25, 49):
         y_0 = modelSub.v_res2[(x_2, 0)].value
@@ -205,8 +205,6 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
     #plt.plot(T2, s2_plot, color="green")
     #plt.plot(T2, s3_plot, color = "cyan")
     #plt.plot(T2, s4_plot, color = "red")
-
-    print(s1_plot)
 
     return obj_value, dual_value
 
