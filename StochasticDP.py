@@ -75,6 +75,18 @@ def masterProblem(dict_of_cuts):
     obj_value = mastermodel.OBJ()
     print('Total objective', obj_value)
 
+    #Plotting av graf
+
+    resultat = []  # Plotting av graf
+    for x in T1:
+        y = mastermodel.v_res1[x].value
+        resultat.append(y)
+
+    plt.plot(T1, resultat)
+
+
+    print("jeg test printer noe: ", mastermodel.v_res1[1].value) #todo må fjernes når jeg er ferdig .
+
     return mastermodel.v_res1[24].value  # todo: kan fjerne verdien den returnerer
 
 
@@ -160,6 +172,47 @@ def subProblem(v_res_guess, num_scenario):
 
     obj_value = modelSub.OBJ()
     dual_value = modelSub.dual.get(modelSub.constr_dualvalue)
+
+    print(" Jeg tester å skrive ut noe fra sub_:", modelSub.v_res2[25,0].value) #todo slett når ferdig med test
+
+    s1_plot = []  # TODO Varshan
+    s2_plot = []
+    s3_plot = []
+    s4_plot = []
+    s0_plot = []
+
+    print("Her kommer resultatene du vil skrive ut:",
+          modelSub.v_res2[25, 1].value)  # todo denne kan fjernes når test er ferdig.
+
+    for x_2 in range(25, 49):
+        y_0 = modelSub.v_res2[(x_2, 0)].value
+        s0_plot.append(y_0)
+        #LS_0.append(y_0)
+
+        y_1 = modelSub.v_res2[(x_2, 1)].value
+        s1_plot.append(y_1)
+        #LS_1.append(y_1)
+
+        y_2 = modelSub.v_res2[(x_2, 2)].value
+        s2_plot.append(y_2)
+        #LS_2.append(y_2)
+
+        y_3 = modelSub.v_res2[(x_2, 3)].value
+        s3_plot.append(y_3)
+        #LS_3.append(y_3)
+
+        y_4 = modelSub.v_res2[(x_2, 4)].value
+        s4_plot.append(y_4)
+        #LS_4.append(y_4)
+
+    print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
+
+    plt.plot(T2,s0_plot,  color="blue")
+    plt.plot(T2, s1_plot,  color="pink")
+    plt.plot(T2, s2_plot, color="green")
+    plt.plot(T2, s3_plot, color = "cyan")
+    plt.plot(T2, s4_plot, color = "red")
+    plt.show()
 
     return obj_value, dual_value  # returning the OBJ and dual of v_res_start constraint to be used in cut generation
 
