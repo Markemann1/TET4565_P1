@@ -51,7 +51,7 @@ def task1_model():
     model.v_res2 = pyo.Var(model.T2, model.S, bounds=(0, V_max))    # variable for reservoir level in T2 pr. scenario
 
     # ---------- Objective function ----------
-    def objective(model):       # todo: skal vi ha t-1 i ( model.MP + t) *p1 med vår behandling av tid?
+    def objective(model):
         o1 = sum(model.p1[t] * (model.MP + t) for t in model.T1)        # profits for T1
         o2 = sum(sum(model.Prob * model.p2[t, s] * (model.MP + t) for t in model.T2) for s in model.S)  # profits for T2 for rach scenario * probability
         o3 = model.Prob * sum(model.WV * model.v_res2[48, s] for s in model.S)  # profits from Water Value * remaining reservoir level at the end of day 2
@@ -87,13 +87,13 @@ def task1_model():
 
     # ---------- Initializing solver and solving the problem ----------
     SolverFactory('gurobi').solve(model)
-    model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)  # getting the dual of the problem # todo: kanskje fjerne, siden vi ikke trenger den
+    # model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
-    model.OBJ.display()  # todo: fjerne / rydde / endre hva som vises - forholde oss til bare plots kanskje?
-    model.v_res1.display()
-    model.v_res2.display()
+    # model.OBJ.display()
+    # model.v_res1.display()
+    # model.v_res2.display()
 
-    # todo: rydde og forklare litt kanskje
+    # todo: rydde og forklare
     # Varshan tester ut plotting av graf under her
     resultat = []
     s1_plot = []

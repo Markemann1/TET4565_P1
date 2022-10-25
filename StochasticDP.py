@@ -28,7 +28,7 @@ def masterProblem(dict_of_cuts):
 
     # -------- Declaring sets ---------------------
     mastermodel.T1 = pyo.Set(initialize=T1)
-    mastermodel.dict_of_cuts = dict_of_cuts  # todo: lurer på om dette blir rart
+    mastermodel.dict_of_cuts = dict_of_cuts
     # -------- Declaring parameters ---------------
     mastermodel.MP = pyo.Param(initialize=MP)           # Market price at t
     mastermodel.Q_max = pyo.Param(initialize=Q_max)     # Max discharge of water to hydropower unit
@@ -45,7 +45,7 @@ def masterProblem(dict_of_cuts):
     mastermodel.v_res1 = pyo.Var(mastermodel.T1, bounds=(0, V_max))  # variable for reservoir level in T1
 
     # -------- Declaring Objective function --------
-    def objective(mastermodel):  # todo: skal vi ha t-1 i ( model.MP + t) *p1 med vår behandling av tid?
+    def objective(mastermodel):
         obj = sum(mastermodel.p1[t] * (mastermodel.MP + t) for t in mastermodel.T1) + mastermodel.alpha
         return obj      # profits for T1 + the alpha "dummy variable"
     mastermodel.OBJ = pyo.Objective(rule=objective(mastermodel), sense=pyo.maximize)  # setting the objective to maximize profits
@@ -62,7 +62,6 @@ def masterProblem(dict_of_cuts):
             return mastermodel.v_res1[t] == mastermodel.v_res1[t - 1] + mastermodel.IF_1 - mastermodel.q1[t]  # water reservoir = previous water level + inflow - discharge
     mastermodel.constr_math_v_res1 = pyo.Constraint(mastermodel.T1, rule=math_v_res1)
 
-    # TODO: Funker denne som den skal?
     mastermodel.listOfCuts = pyo.ConstraintList()  # A constraint of a list of constraints based on cuts
     for cut in dict_of_cuts.keys():  # Going through all the keys in the cut dictionary generated in the SDP_loop
         mastermodel.listOfCuts.add(mastermodel.alpha <= mastermodel.dict_of_cuts[cut]['a'] * mastermodel.v_res1[24] + mastermodel.dict_of_cuts[cut]['b'])
@@ -70,12 +69,12 @@ def masterProblem(dict_of_cuts):
 
     # ---------- Initializing solver and solving the problem ----------
     SolverFactory('gurobi').solve(mastermodel)
-    mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)  # getting the dual of the problem # todo: kanskje fjerne, siden vi ikke trenger den
+    # mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
     obj_value = mastermodel.OBJ()
     print('Total objective', obj_value)
 
-    #Plotting av graf
+    # ---- Plotting av graf ----
 
     resultat = []  # Plotting av graf
     for x in T1:
@@ -87,7 +86,7 @@ def masterProblem(dict_of_cuts):
 
     print("jeg test printer noe: ", mastermodel.v_res1[1].value) #todo må fjernes når jeg er ferdig .
 
-    return mastermodel.v_res1[24].value  # todo: kan fjerne verdien den returnerer
+    return mastermodel.v_res1[24].value
 
 
 def subProblem(v_res_guess, num_scenario):
