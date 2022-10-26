@@ -126,15 +126,14 @@ def task1_model():
 
     print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
 
-    plt.plot(T1, resultat)
-    plt.plot(T2, s0_plot)
-    plt.plot(T2, s1_plot)
+    plt.plot(T1, resultat, label = "Test")
+    plt.plot(T2, s0_plot, label = "Test2")
+    plt.plot(T2, s1_plot,label = "Test2")
     plt.plot(T2, s2_plot)
     plt.plot(T2, s3_plot)
     plt.plot(T2, s4_plot)
-    plt.title("Her kommer tittel")
-    plt.xlabel("Time")
-    plt.ylabel("Water value")
+    plt.xlabel("Time [h]")
+    plt.ylabel("Reservoirs volume [Mm{3}]")
     plt.grid(
         linestyle='--'
              )  # TODO: Trengs kanskje ikke men kan fjernes senere.
