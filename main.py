@@ -13,6 +13,7 @@ def main():
     #Benders_loop()
 
     #print('Oppgave 3:')
+
     #SDP_loop()
 
 

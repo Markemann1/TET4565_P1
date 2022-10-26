@@ -106,6 +106,8 @@ def task1_model():
         y = model.v_res1[x].value
         resultat.append(y)
 
+    T3 = range(0,25)
+    T4 = range(24,49)
     # print(model.v_res2[(25, 0)].value)
 
     for x_2 in range(25, 49):
@@ -124,19 +126,42 @@ def task1_model():
         y_4 = model.v_res2[(x_2, 4)].value
         s4_plot.append(y_4)
 
-    print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
+    print(resultat[-1:])
+    #Kode for å gjøre grafen sammenhengende
+    sammenheng = resultat[-1:]
+    resultat.append(sammenheng[0])
+    sammenheng = resultat[-1:]
+    s1_plot.insert(0,sammenheng[0])
+    sammenheng = resultat[-1:]
+    s2_plot.insert(0,sammenheng[0])
+    sammenheng = resultat[-1:]
+    s3_plot.insert(0,sammenheng[0])
+    sammenheng = resultat[-1:]
+    s4_plot.insert(0,sammenheng[0])
+    sammenheng = resultat[-1:]
+    s0_plot.insert(0,sammenheng[0])
 
-    plt.plot(T1, resultat, label = "Test")
-    plt.plot(T2, s0_plot, label = "Test2")
-    plt.plot(T2, s1_plot,label = "Test2")
-    plt.plot(T2, s2_plot)
-    plt.plot(T2, s3_plot)
-    plt.plot(T2, s4_plot)
+    print(s0_plot)
+    print(s1_plot)
+    print(s2_plot)
+    print(s3_plot)
+    print(s4_plot)
+    print(resultat)
+
+    plt.plot(T3, resultat,label = "Deterministic Problem")
+    plt.plot(T4, s0_plot,label = "Scenario 1")
+    plt.plot(T4, s1_plot,label = "Scenario 2")
+    plt.plot(T4, s2_plot,label = "Scenario 3")
+    plt.plot(T4, s3_plot,label = "Scenario 4")
+    plt.plot(T4, s4_plot,label = "Scenario 5")
+
+
     plt.xlabel("Time [h]")
-    plt.ylabel("Reservoirs volume [Mm{3}]")
+    plt.ylabel("Reservoirs volume [Mm3]")
     plt.grid(
         linestyle='--'
              )  # TODO: Trengs kanskje ikke men kan fjernes senere.
+    plt.legend(loc='lower left')
     plt.show()
     print(resultat)
 
