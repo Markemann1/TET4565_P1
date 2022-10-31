@@ -168,7 +168,7 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
     obj_value = modelSub.OBJ()
     dual_value = modelSub.dual.get(modelSub.constr_dualvalue)
 
-    s1_plot = [] # TODO Varshan
+    """s1_plot = [] # TODO Varshan
     s2_plot = []
     s3_plot = []
     s4_plot = []
@@ -199,11 +199,11 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
 
     #print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
 
-    #plt.plot(T2,s0_plot,  color="blue")
-    #plt.plot(T2, s1_plot,  color="pink")
-    #plt.plot(T2, s2_plot, color="green")
-    #plt.plot(T2, s3_plot, color = "cyan")
-    #plt.plot(T2, s4_plot, color = "red")
+    plt.plot(T2,s0_plot,  color="blue")
+    plt.plot(T2, s1_plot,  color="pink")
+    plt.plot(T2, s2_plot, color="green")
+    plt.plot(T2, s3_plot, color = "cyan")
+    plt.plot(T2, s4_plot, color = "red")"""
 
     return obj_value, dual_value
 
@@ -216,6 +216,8 @@ def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
     cut = {'a': dual, 'b': b}
     dict_of_cuts[it] = cut
 
+    print("Her er det du trenger nå varshan : " , v_res1)
+
 
 def Benders_loop():
     num_scenario = 5  # oppgave b
@@ -226,6 +228,7 @@ def Benders_loop():
     LS_3 = []
     LS_4 = []
     T2 = list(range(25,49))
+    testavcut = []
 
 
     iteration = 0
@@ -243,7 +246,31 @@ def Benders_loop():
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
 
-    print("Her er tabell med L0!", LS_0)
+        alfa = dict_of_cuts[iteration]
+        testavcut.append(alfa)
+        print(v_res1_t24, "Varshan tester")
+
+    #Dette blir kaos
+        y_plot = []
+        x_plot = []
+        a_plot = [0, 21784.0, 13000.0, 16738.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0]
+        b_plot = [0, 105437.88, 147495.6, 120158.46, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34]
+        x_v_res = [0,1,2,3,4,5,6,7,8,9,10]
+        for beta in range(0,9):
+            if iteration == 2 or iteration == 3 or iteration == 4 or iteration == 5 or iteration == 6 or iteration == 7 or iteration == 8 or iteration == 9 or iteration == 10:
+                y_plot_beregn = float(a_plot[beta]) * x_v_res[beta] + float(b_plot[beta])
+                y_plot.append(y_plot_beregn)
+                x_plot.append(x_v_res[beta])
+        print(x_plot)
+        print(y_plot)
+        plt.plot(x_plot,y_plot)
+
+    #Kode for å printe ut cuts
+
+
+
+    #Kode for å printe ut no greier
+    """print("Her er tabell med L0!", LS_0)
     print("Her er tabell med L1!", LS_1)
     print("Her er tabell med L2!", LS_2)
     print("Her er tabell med L3!", LS_3)
@@ -255,8 +282,7 @@ def Benders_loop():
     plt.plot(T2, LS_3[-24:], color="cyan")
     plt.plot(T2, LS_4[-24:], color="red")
         # if dict_of_cuts[iteration]['a'] == dict_of_cuts[iteration-1]['a'] and dict_of_cuts[iteration]['b'] == dict_of_cuts[iteration-1]['b']:
-        #     print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker.
-
+        #     print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker."""
     # plotting av graf under
     plt.title("Oppgave 2")
     plt.xlabel("Time")
@@ -264,4 +290,4 @@ def Benders_loop():
     plt.grid(
         linestyle = '--'
              )
-    plt.show()
+plt.show()
