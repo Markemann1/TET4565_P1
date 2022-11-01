@@ -232,7 +232,26 @@ def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
 def Benders_loop():
     num_scenario = 5  # oppgave b
     dict_of_cuts = {}
-    LS_0 = []
+
+    num_scenario = 1  # Change to 1 to run for 1 scenario. Change the scenario to run in the top of the subproblem function
+    dict_of_cuts = {}
+
+    for iteration in range(1, 10):
+        print('entering master')
+        v_res1_t24 = masterProblem(dict_of_cuts)
+        print(f'master returned {v_res1_t24}')
+
+        print('entering sub')
+        OBJ, Dual = subProblem(v_res1_t24, num_scenario)
+        print(f'sub returned OBJ = {OBJ} and Dual = {Dual}')
+
+        print('entering generate cuts')
+        generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
+        print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
+
+
+
+    '''LS_0 = []
     LS_1 = []
     LS_2 = []
     LS_3 = []
@@ -314,4 +333,4 @@ def Benders_loop():
         linestyle = '--'
              )
 
-    plt.show()
+    plt.show()'''
