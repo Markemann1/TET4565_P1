@@ -157,7 +157,7 @@ def task1_model():
 
 
     plt.xlabel("Time [h]")
-    plt.ylabel("Reservoirs volume [Mm3]")
+    plt.ylabel("Reservoir volume [Mm3]")
     plt.grid(
         linestyle='--'
              )  # TODO: Trengs kanskje ikke men kan fjernes senere.
