@@ -134,13 +134,23 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
     modelSub.v_res_t24_var = pyo.Var(bounds=(0, V_max))                     # complicating variable, v_res[24] from the master problem
 
     # ---------- Objective function ----------
-    def objective(modelSub):  # todo: dette og evt SDP; legge til en if num_scenario == 1, ikke gang med sannsynlighet
-        o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
-                 modelSub.S)    # profits for T2 for rach scenario * probability
-        o3 = modelSub.Prob * sum(
-            modelSub.WV * modelSub.v_res2[48, s] for s in modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
-        obj = o2 + o3   # summing all profit areas
-        return obj
+    def objective(modelSub):
+        if num_scenario == 1:
+            o2 = sum(sum(modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
+                     modelSub.S)  # profits for T2 for rach scenario * probability
+            o3 = sum(modelSub.WV * modelSub.v_res2[48, s] for s in
+                     modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
+            obj = o2 + o3  # summing all profit areas
+            return obj
+
+        else:
+            o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
+                     modelSub.S)  # profits for T2 for rach scenario * probability
+            o3 = modelSub.Prob * sum(
+                modelSub.WV * modelSub.v_res2[48, s] for s in
+                modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
+            obj = o2 + o3  # summing all profit areas
+            return obj
     modelSub.OBJ = pyo.Objective(rule=objective(modelSub), sense=pyo.maximize)  # setting the objective to maximize profits
 
     # ---------- Declaring constraints ----------

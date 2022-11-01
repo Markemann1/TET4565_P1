@@ -139,12 +139,20 @@ def subProblem(v_res_guess, num_scenario):
 
     # ---------- Objective function ----------
     def objective(modelSub):
-        o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
-                 modelSub.S)    # profits for T2 for rach scenario * probability
-        o3 = modelSub.Prob * sum(
-            modelSub.WV * modelSub.v_res2[48, s] for s in modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
-        obj = o2 + o3   # summing all profit areas
-        return obj
+        if num_scenario == 1:
+            o2 = sum(sum(modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
+                     modelSub.S)  # profits for T2 for rach scenario * probability
+            o3 = sum(modelSub.WV * modelSub.v_res2[48, s] for s in modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
+            obj = o2 + o3  # summing all profit areas
+            return obj
+
+        else:
+            o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
+                     modelSub.S)    # profits for T2 for rach scenario * probability
+            o3 = modelSub.Prob * sum(
+                modelSub.WV * modelSub.v_res2[48, s] for s in modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
+            obj = o2 + o3   # summing all profit areas
+            return obj
     modelSub.OBJ = pyo.Objective(rule=objective(modelSub), sense=pyo.maximize)  # setting the objective to maximize profits
 
     # ---------- Declaring constraints ----------
