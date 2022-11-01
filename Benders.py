@@ -1,7 +1,7 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 def masterProblem(dict_of_cuts):
     """
@@ -80,7 +80,7 @@ def masterProblem(dict_of_cuts):
         y = mastermodel.v_res1[x].value
         resultat.append(y)
 
-    plt.plot(T1, resultat)
+    #plt.plot(T1, resultat)
 
     return mastermodel.v_res1[24].value
 
@@ -240,6 +240,16 @@ def Benders_loop():
     T2 = list(range(25,49))
     testavcut = []
 
+    a_plot = [0, 21784.0, 13000.0, 16738.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0]
+    b_plot = [0, 105437.88, 147495.6, 120158.46, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34]
+    for delta in range(1, 10):
+        a = a_plot[delta]
+        b = b_plot[delta]
+        x = np.linspace(0, 10, 100)
+        y = a * x + b
+        print("Dette er din ", y)
+        plt.plot(x, y)
+
 
     iteration = 0
     for iteration in range(1, 10):
@@ -263,8 +273,7 @@ def Benders_loop():
     #Dette blir kaos
         y_plot = []
         x_plot = []
-        a_plot = [0, 21784.0, 13000.0, 16738.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0]
-        b_plot = [0, 105437.88, 147495.6, 120158.46, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34]
+
         x_v_res = [0,1,2,3,4,5,6,7,8,9,10]
         for beta in range(0,9):
             if iteration == 2 or iteration == 3 or iteration == 4 or iteration == 5 or iteration == 6 or iteration == 7 or iteration == 8 or iteration == 9 or iteration == 10:
@@ -273,7 +282,11 @@ def Benders_loop():
                 x_plot.append(x_v_res[beta])
         print(x_plot)
         print(y_plot)
-        plt.plot(x_plot,y_plot)
+       #plt.plot(x_plot,y_plot)
+
+        # Cuts sånn som kasper foreslo
+
+
 
     #Kode for å printe ut cuts
 
@@ -300,4 +313,5 @@ def Benders_loop():
     plt.grid(
         linestyle = '--'
              )
-plt.show()
+
+    plt.show()

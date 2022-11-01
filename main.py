@@ -9,7 +9,7 @@ def main():
     #print('Oppgave 1:')
     #task1_model()
 
-    print('Oppgave 2:')
+    #print('Oppgave 2:')
     Benders_loop()
 
     #print('Oppgave 3:')
