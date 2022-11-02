@@ -162,8 +162,10 @@ def task1_model():
         linestyle='--'
              )  # TODO: Trengs kanskje ikke men kan fjernes senere.
     plt.legend(loc='lower left')
-    plt.show()
-    print(resultat)
+    #plt.show()
+    #print(resultat)
+
+
 
 
 #  def plotgraf(y_list):
