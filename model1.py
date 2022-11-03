@@ -95,7 +95,7 @@ def task1_model():
 
     # todo: rydde og forklare
     # Varshan tester ut plotting av graf under her
-    resultat = []
+    resultat = [5]
     s1_plot = []
     s2_plot = []
     s3_plot = []
@@ -126,10 +126,10 @@ def task1_model():
         y_4 = model.v_res2[(x_2, 4)].value
         s4_plot.append(y_4)
 
-    print(resultat[-1:])
+    '''print(resultat[-1:])
     #Kode for å gjøre grafen sammenhengende
     sammenheng = resultat[-1:]
-    resultat.append(sammenheng[0])
+    resultat.append(sammenheng[0])'''
     sammenheng = resultat[-1:]
     s1_plot.insert(0,sammenheng[0])
     sammenheng = resultat[-1:]
