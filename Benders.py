@@ -236,7 +236,7 @@ def Benders_loop():
     num_scenario = 5  # oppgave b
     dict_of_cuts = {}
 
-    num_scenario = 1  # Change to 1 to run for 1 scenario. Change the scenario to run in the top of the subproblem function
+    #num_scenario = 1  # Change to 1 to run for 1 scenario. Change the scenario to run in the top of the subproblem function
     dict_of_cuts = {}
 
     LS_0 = []
@@ -261,10 +261,7 @@ def Benders_loop():
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
 
-
-
-
-
+    '''
     a_plot = [0, 21784.0, 13000.0, 16738.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0]
     b_plot = [0, 105437.88, 147495.6, 120158.46, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34]
     for delta in range(1, 10):
@@ -275,7 +272,7 @@ def Benders_loop():
         print("Dette er din ", y)
         plt.plot(x, y)
 
-    '''
+    
     iteration = 0
     for iteration in range(1, 10):
 
