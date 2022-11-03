@@ -148,6 +148,7 @@ def task1_model():
     print(s4_plot)
     print(resultat)
 
+
     plt.plot(T3, resultat,label = "Deterministic Problem")
     plt.plot(T4, s0_plot,label = "Scenario 1")
     plt.plot(T4, s1_plot,label = "Scenario 2")
@@ -155,6 +156,15 @@ def task1_model():
     plt.plot(T4, s3_plot,label = "Scenario 4")
     plt.plot(T4, s4_plot,label = "Scenario 5")
 
+    '''
+    #Part 2 siste deloppgave
+    plt.plot(T3, resultat,label = "Deterministic Problem", color= "purple")
+    plt.plot(T4, s0_plot,label = "Scenario 1", color="black")
+    plt.plot(T4, s1_plot,label = "Scenario 2", color = "orange")
+    plt.plot(T4, s2_plot,label = "Scenario 3", color = "brown")
+    plt.plot(T4, s3_plot,label = "Scenario 4", color = "green")
+    plt.plot(T4, s4_plot,label = "Scenario 5", color = "blue")
+    '''
 
     plt.xlabel("Time [h]")
     plt.ylabel("Reservoir volume [Mm3]")
@@ -162,7 +172,7 @@ def task1_model():
         linestyle='--'
              )  # TODO: Trengs kanskje ikke men kan fjernes senere.
     plt.legend(loc='lower left')
-    #plt.show()
+    plt.show()
     #print(resultat)
 
 
