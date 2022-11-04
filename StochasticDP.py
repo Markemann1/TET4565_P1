@@ -189,7 +189,7 @@ def SDP_loop():
     The function to go through the Master- and Subproblem in accordance with
     the Stochastic Dynamic Programming method
     """
-    list_of_guess = [1, 2, 3, 4, 5, 6, 7, 8, 9]     # for v_res value to be put into the Subproblem
+    list_of_guess = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]     # for v_res value to be put into the Subproblem
     dict_of_cuts = {}                               # dictionary to keep the cuts
     iterator = 0                                    # to organize the dict cut keys
     num_scenario = 1                                # to set number of scenario's in the subproblem
