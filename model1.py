@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 
 
 def task1_model():
+    """
+    The complete optimization model of the hydropower scheduling problem
+    """
     # Set data
     T1 = list(range(1, 25))      # Hour 1-24, day 1
     T2 = list(range(25, 49))     # Hour 25-48, day 2
@@ -82,92 +85,8 @@ def task1_model():
             return model.v_res2[t, s] == model.v_res2[(t-1), s] + (model.IF_2 * s) - model.q2[t, s]  # water reservoir = previous water level + inflow - discharge
     model.constr_math_v_res2 = pyo.Constraint(model.T2, model.S, rule=math_v_res2)
 
-    # TODO: Oppg C = Endre på ting og si fra hva jeg endret - kommenter hvordan det endrer
-    # todo: forslag: inflow, WV_end. KANSKJE sannsynlighet, men da må vi oppdatere Parameter_sannsynlighet -> liste, og oppdatere o3 i OBJ
-
     # ---------- Initializing solver and solving the problem ----------
+
     SolverFactory('gurobi').solve(model)
-    # model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
-    # model.OBJ.display()
-    # model.v_res1.display()
-    # model.v_res2.display()
-
-    # todo: rydde og forklare
-    # Varshan tester ut plotting av graf under her
-    resultat = []
-    s1_plot = []
-    s2_plot = []
-    s3_plot = []
-    s4_plot = []
-    s0_plot = []
-
-    for x in T1:
-        y = model.v_res1[x].value
-        resultat.append(y)
-
-    T3 = range(0,25)
-    T4 = range(24,49)
-    # print(model.v_res2[(25, 0)].value)
-
-    for x_2 in range(25, 49):
-        y_0 = model.v_res2[(x_2, 0)].value
-        s0_plot.append(y_0)
-
-        y_1 = model.v_res2[(x_2, 1)].value
-        s1_plot.append(y_1)
-
-        y_2 = model.v_res2[(x_2, 2)].value
-        s2_plot.append(y_2)
-
-        y_3 = model.v_res2[(x_2, 3)].value
-        s3_plot.append(y_3)
-
-        y_4 = model.v_res2[(x_2, 4)].value
-        s4_plot.append(y_4)
-
-    print(resultat[-1:])
-    #Kode for å gjøre grafen sammenhengende
-    sammenheng = resultat[-1:]
-    resultat.append(sammenheng[0])
-    sammenheng = resultat[-1:]
-    s1_plot.insert(0,sammenheng[0])
-    sammenheng = resultat[-1:]
-    s2_plot.insert(0,sammenheng[0])
-    sammenheng = resultat[-1:]
-    s3_plot.insert(0,sammenheng[0])
-    sammenheng = resultat[-1:]
-    s4_plot.insert(0,sammenheng[0])
-    sammenheng = resultat[-1:]
-    s0_plot.insert(0,sammenheng[0])
-
-    print(s0_plot)
-    print(s1_plot)
-    print(s2_plot)
-    print(s3_plot)
-    print(s4_plot)
-    print(resultat)
-
-    plt.plot(T3, resultat,label = "Deterministic Problem")
-    plt.plot(T4, s0_plot,label = "Scenario 1")
-    plt.plot(T4, s1_plot,label = "Scenario 2")
-    plt.plot(T4, s2_plot,label = "Scenario 3")
-    plt.plot(T4, s3_plot,label = "Scenario 4")
-    plt.plot(T4, s4_plot,label = "Scenario 5")
-
-
-    plt.xlabel("Time [h]")
-    plt.ylabel("Reservoirs volume [Mm3]")
-    plt.grid(
-        linestyle='--'
-             )  # TODO: Trengs kanskje ikke men kan fjernes senere.
-    plt.legend(loc='lower left')
-    plt.show()
-    print(resultat)
-
-
-#  def plotgraf(y_list):
-#      for x in range (25):
-#          for y in model.vres1:
-#              print(model.vres1)
-#      print(model)
+    model.OBJ.display()
