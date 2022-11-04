@@ -1,6 +1,5 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
-import matplotlib.pyplot as plt
 
 
 def masterProblem(dict_of_cuts):
@@ -69,10 +68,9 @@ def masterProblem(dict_of_cuts):
 
     # ---------- Initializing solver and solving the problem ----------
     SolverFactory('gurobi').solve(mastermodel)
-    # mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
-    obj_value = mastermodel.OBJ()
-    print('Total objective', obj_value)
+    OBJ_value = round(mastermodel.OBJ(), 2)  # rounding to two decimal points
+    print(f'\nThe total objective value is: {OBJ_value}')
 
     return mastermodel.v_res1[24].value
 
@@ -87,7 +85,7 @@ def subProblem(v_res_guess, num_scenario):
     # ---------- Set data ----------
     T2 = list(range(25, 49))     # Hour 25-48
     if num_scenario == 1:        # for running only one scenario, num_scenario written in SDP_loop
-        S = [1]                  # the scenario being run
+        S = [2]                  # the scenario being run
     else:
         S = list(range(0, 5))    # if not one, we run all 5 scenario's 0-4
 
@@ -129,7 +127,7 @@ def subProblem(v_res_guess, num_scenario):
     def objective(modelSub):
         if num_scenario == 1:
             o2 = sum(sum(modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
-                     modelSub.S)  # profits for T2 for rach scenario * probability
+                     modelSub.S)  # profits for T2 for the one scenario chosen to be run
             o3 = sum(modelSub.WV * modelSub.v_res2[48, s] for s in
                      modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
             obj = o2 + o3  # summing all profit areas
@@ -137,10 +135,10 @@ def subProblem(v_res_guess, num_scenario):
 
         else:
             o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
-                     modelSub.S)  # profits for T2 for rach scenario * probability
+                     modelSub.S)  # profits for T2 for each scenario * probability
             o3 = modelSub.Prob * sum(
                 modelSub.WV * modelSub.v_res2[48, s] for s in
-                modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
+                modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2 * probabilities and over all scenarios
             obj = o2 + o3  # summing all profit areas
             return obj
 
@@ -187,19 +185,22 @@ def generate_cuts(v_res_guess, OBJ, Dual, dict_of_cuts, iterator):
 def SDP_loop():
     """
     The function to go through the Master- and Subproblem in accordance with
-    the Stochastic Dynamic Programming method
+    the Stochastic Dynamic Programming method.
+    The subproblem is run through the list of guesses as state-variables and generating cuts for each iteration. The
+    number of cuts that is insertet into the master problem at the end is dependent on how many state-variable guesses that are
+    run through the subproblem.
     """
     list_of_guess = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]     # for v_res value to be put into the Subproblem
-    dict_of_cuts = {}                               # dictionary to keep the cuts
-    iterator = 0                                    # to organize the dict cut keys
-    num_scenario = 1                                # to set number of scenario's in the subproblem
+    dict_of_cuts = {}                                   # dictionary to keep the cuts
+    iterator = 0                                        # to organize the dict cut keys
+    num_scenario = 5                                    # to set number of scenario's in the subproblem
     for guess in list_of_guess:
-        print(f'Entering subproblem for the {guess} time')
         OBJ, Dual = subProblem(guess, num_scenario)     # getting the OBJ and dual from v_res guess-list
 
-        print('Generating cuts')
-        generate_cuts(guess, OBJ, Dual, dict_of_cuts, iterator)     # generating cuts from the subproblem values
+        print(f'Generating cut number: {iterator}')
+        generate_cuts(guess, OBJ, Dual, dict_of_cuts, iterator)  # generating cuts from the subproblem values
+        print(f'- based on these values {dict_of_cuts[iterator]}')
         iterator += 1
 
-    print('Entering masterproblem')
+    print(f'Entering masterproblem with {len(list_of_guess)} cuts')
     masterProblem(dict_of_cuts)     # solving the master problem with the cuts generated
