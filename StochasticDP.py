@@ -80,11 +80,11 @@ def masterProblem(dict_of_cuts):
     for x in T1:
         y = mastermodel.v_res1[x].value
         resultat.append(y)
-
+    print(resultat)
     plt.plot(T1, resultat)
 
 
-    print("jeg test printer noe: ", mastermodel.v_res1[1].value) #todo må fjernes når jeg er ferdig .
+    print("jeg test printer noe: ", resultat) #todo må fjernes når jeg er ferdig .
 
     return mastermodel.v_res1[24].value
 
@@ -180,6 +180,7 @@ def subProblem(v_res_guess, num_scenario):
     obj_value = modelSub.OBJ()
     dual_value = modelSub.dual.get(modelSub.constr_dualvalue)
 
+    '''
     print(" Jeg tester å skrive ut noe fra sub_:", modelSub.v_res2[25,0].value) #todo slett når ferdig med test
 
     s1_plot = []  # TODO Varshan
@@ -192,34 +193,34 @@ def subProblem(v_res_guess, num_scenario):
           modelSub.v_res2[25, 1].value)  # todo denne kan fjernes når test er ferdig.
 
     for x_2 in range(25, 49):
-        y_0 = modelSub.v_res2[(x_2, 0)].value
+        #y_0 = modelSub.v_res2[(x_2, 0)].value
         s0_plot.append(y_0)
         #LS_0.append(y_0)
 
-        y_1 = modelSub.v_res2[(x_2, 1)].value
+        #y_1 = modelSub.v_res2[(x_2, 1)].value
         s1_plot.append(y_1)
         #LS_1.append(y_1)
 
-        y_2 = modelSub.v_res2[(x_2, 2)].value
+        #y_2 = modelSub.v_res2[(x_2, 2)].value
         s2_plot.append(y_2)
         #LS_2.append(y_2)
 
-        y_3 = modelSub.v_res2[(x_2, 3)].value
+        #y_3 = modelSub.v_res2[(x_2, 3)].value
         s3_plot.append(y_3)
         #LS_3.append(y_3)
 
-        y_4 = modelSub.v_res2[(x_2, 4)].value
+        #y_4 = modelSub.v_res2[(x_2, 4)].value
         s4_plot.append(y_4)
         #LS_4.append(y_4)
 
-    print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
+#    print(f'Dette burde være tallene 's2_plot)
 
-    plt.plot(T2,s0_plot,  color="blue")
-    plt.plot(T2, s1_plot,  color="pink")
-    plt.plot(T2, s2_plot, color="green")
-    plt.plot(T2, s3_plot, color = "cyan")
-    plt.plot(T2, s4_plot, color = "red")
-    plt.show()
+    #plt.plot(T2,s0_plot,  color="blue")
+    #plt.plot(T2, s1_plot,  color="pink")
+    #plt.plot(T2, s2_plot, color="green")
+    #plt.plot(T2, s3_plot, color = "cyan")
+    #plt.plot(T2, s4_plot, color = "red")
+    plt.show()'''
 
     return obj_value, dual_value  # returning the OBJ and dual of v_res_start constraint to be used in cut generation
 
@@ -239,10 +240,10 @@ def SDP_loop():
     The function to go through the Master- and Subproblem in accordance with
     the Stochastic Dynamic Programming method
     """
-    list_of_guess = [1, 2, 3, 4, 5, 6, 7, 8, 9]     # for v_res value to be put into the Subproblem
+    list_of_guess = [1,2,3,4,5,6,7,8,9,10]     # for v_res value to be put into the Subproblem
     dict_of_cuts = {}                               # dictionary to keep the cuts
     iterator = 0                                    # to organize the dict cut keys
-    num_scenario = 4                                # to set number of scenario's in the subproblem
+    num_scenario = 5                                # to set number of scenario's in the subproblem
     for guess in list_of_guess:
         print(f'Entering subproblem for the {guess} time')
         OBJ, Dual = subProblem(guess, num_scenario)     # getting the OBJ and dual from v_res guess-list

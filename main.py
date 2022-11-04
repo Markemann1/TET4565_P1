@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 
 def main():
     #print('Oppgave 1:')
-    task1_model()
+    #task1_model()
 
     #print('Oppgave 2:')
     #Benders_loop()
 
     #print('Oppgave 3:')
-    #SDP_loop()
+    SDP_loop()
 
 
 if __name__ == '__main__':

@@ -86,7 +86,7 @@ def masterProblem(dict_of_cuts, LS0):
     #T3 = range(0,25)
 
     plt.plot(T1, resultat)
-    #print("Disse verdiene trenger du for første 24: ", resultat)
+    print("Disse verdiene trenger du for første 24: ", resultat)
 
 
     return mastermodel.v_res1[24].value
@@ -197,7 +197,7 @@ def subProblem(v_res_t24, num_scenario,LS_0, LS_1, LS_2, LS_3, LS_4): #TODO List
         LS_0.append(y_0)
 
     T4 = range(24,49)
-    #print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
+    print(s0_plot, s1_plot, s2_plot, s3_plot, s4_plot)
     #sammenheng = s0_plot[0]
     #s0_plot.insert(0, sammenheng)
 
@@ -261,7 +261,7 @@ def Benders_loop():
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
         print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
 
-    '''
+    ''' 
     a_plot = [0, 21784.0, 13000.0, 16738.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0, 16847.0]
     b_plot = [0, 105437.88, 147495.6, 120158.46, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34, 119648.34]
     for delta in range(1, 10):
@@ -272,7 +272,7 @@ def Benders_loop():
         print("Dette er din ", y)
         plt.plot(x, y)
 
-    
+   
     iteration = 0
     for iteration in range(1, 10):
 
