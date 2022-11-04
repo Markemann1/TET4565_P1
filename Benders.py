@@ -170,7 +170,7 @@ def subProblem(v_res_t24, num_scenario):
     obj_value = modelSub.OBJ()
     dual_value = modelSub.dual.get(modelSub.constr_dualvalue)
 
-    return obj_value, dual_value
+    return obj_value, dual_value  # returning the OBJ and dual of v_res_start constraint to be used in cut generation
 
 
 def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
@@ -196,11 +196,11 @@ def Benders_loop():
     for iteration in range(1, 7):
 
         print(f'Master problem iteration nr: {iteration}')
-        v_res1_t24 = masterProblem(dict_of_cuts)
+        v_res1_t24 = masterProblem(dict_of_cuts)  # returning the state variable
 
-        OBJ, Dual = subProblem(v_res1_t24, num_scenario)
+        OBJ, Dual = subProblem(v_res1_t24, num_scenario)  # with state variable as input, returning the data needed to generate cuts
 
         print(f'\n Generating cut nr: {iteration} based on:')
-        generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
+        generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)  # generating cuts
         print(f'{dict_of_cuts[iteration]} \n')
 
