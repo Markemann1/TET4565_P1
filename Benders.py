@@ -1,6 +1,5 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
-import matplotlib.pyplot as plt
 
 
 def masterProblem(dict_of_cuts):
@@ -70,10 +69,9 @@ def masterProblem(dict_of_cuts):
 
     # ---------- Initializing solver and solving the problem ----------
     SolverFactory('gurobi').solve(mastermodel)
-    # mastermodel.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
-    obj_value = mastermodel.OBJ()
-    print('Total objective', obj_value)
+    OBJ_value = round(mastermodel.OBJ(), 2)  # rounding to two decimal points
+    print(f'\nThe total objective value is: {OBJ_value}')
 
     return mastermodel.v_res1[24].value
 
@@ -88,7 +86,7 @@ def subProblem(v_res_t24, num_scenario):
     # ---------- Set data ----------
     T2 = list(range(25, 49))     # Hour 25-48
     if num_scenario == 1:        # for running only one scenario, num_scenario written in SDP_loop
-        S = [1]                  # the scenario being run
+        S = [2]                  # the scenario being run
     else:
         S = list(range(0, 5))    # if not one, we run all 5 scenario's 0-4
 
@@ -130,7 +128,7 @@ def subProblem(v_res_t24, num_scenario):
     def objective(modelSub):
         if num_scenario == 1:
             o2 = sum(sum(modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
-                     modelSub.S)  # profits for T2 for rach scenario * probability
+                     modelSub.S)  # profits for T2 for the one scenario chosen to be run
             o3 = sum(modelSub.WV * modelSub.v_res2[48, s] for s in
                      modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
             obj = o2 + o3  # summing all profit areas
@@ -138,10 +136,10 @@ def subProblem(v_res_t24, num_scenario):
 
         else:
             o2 = sum(sum(modelSub.Prob * modelSub.p2[t, s] * (modelSub.MP + t) for t in modelSub.T2) for s in
-                     modelSub.S)  # profits for T2 for rach scenario * probability
+                     modelSub.S)  # profits for T2 for each scenario * probability
             o3 = modelSub.Prob * sum(
                 modelSub.WV * modelSub.v_res2[48, s] for s in
-                modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2
+                modelSub.S)  # profits from Water Value * remaining reservoir level at the end of day 2 * probabilities and over all scenarios
             obj = o2 + o3  # summing all profit areas
             return obj
 
@@ -181,26 +179,28 @@ def generate_cuts(OBJ, dual, v_res1, it, dict_of_cuts):
     """
     b = OBJ - dual * v_res1         # calculating value 'b' for the linear function
     cut = {'a': dual, 'b': b}
-    dict_of_cuts[it] = cut
+    dict_of_cuts[it] = cut          # adding the cut values to the cut dictionary
 
 
 def Benders_loop():
-    num_scenario = 1  # Change to 1 to run for 1 scenario. Change the scenario to run in the top of the subproblem function
+    """
+    The run-function for Benders Decomposition.
+    The masterproblem returns the state variable used as input in the subproblem
+    Based on the state variable, the subproblem returns the objective and the state-variables dual
+    A weighted cut is generated pr. iteration based on the subproblem's returned data.
+    Lastly, the cuts are added as constraints in the masterproblem, and the cycle continues.
+    """
+    num_scenario = 5  # Change to 1 to run for 1 scenario. Change the scenario to run in the top of the subproblem function
     dict_of_cuts = {}
 
-    for iteration in range(1, 10):
+    for iteration in range(1, 7):
 
-        print('entering master')
+        print(f'Master problem iteration nr: {iteration}')
         v_res1_t24 = masterProblem(dict_of_cuts)
-        print(f'master returned {v_res1_t24}')
 
-        print('entering sub')
         OBJ, Dual = subProblem(v_res1_t24, num_scenario)
-        print(f'sub returned OBJ = {OBJ} and Dual = {Dual}')
 
-        print('entering generate cuts')
+        print(f'\n Generating cut nr: {iteration} based on:')
         generate_cuts(OBJ, Dual, v_res1_t24, iteration, dict_of_cuts)
-        print(f' Dual/a, b Vres/x = {dict_of_cuts[iteration]}')
+        print(f'{dict_of_cuts[iteration]} \n')
 
-        # if dict_of_cuts[iteration]['a'] == dict_of_cuts[iteration-1]['a'] and dict_of_cuts[iteration]['b'] == dict_of_cuts[iteration-1]['b']:
-        #     print('Getting repeating cuts')  # todo: kan exite loopen her, tror koden funker.
