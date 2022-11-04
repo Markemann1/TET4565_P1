@@ -1,6 +1,5 @@
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
-import matplotlib.pyplot as plt
 
 
 def task1_model():
@@ -87,6 +86,7 @@ def task1_model():
 
     # ---------- Initializing solver and solving the problem ----------
 
-    SolverFactory('gurobi').solve(model)
+    SolverFactory('gurobi').solve(model)  # asking gurobi to solve
+    OBJ_value = round(model.OBJ(), 2)  # rounding to two decimal points
+    print(f'\nThe total objective value is: {OBJ_value}')
 
-    model.OBJ.display()
