@@ -64,3 +64,5 @@ SDP_loop()
     To change the single scenario that is modelled, you need to change the
     " if num_scenario == 1
             S = [a number between 0 and 4]"
+
+    To change the number of cuts generated, you need to change the "list_of_guess" list of state variables
