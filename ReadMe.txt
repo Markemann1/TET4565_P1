@@ -35,8 +35,15 @@ SDP_loop()
     The actual Benders methodology algorithm, that sets the order of how and when to call the other functions
     This is the only function that needs to be called in order to solve the problem
 
+    To run a single scenario, this variable need to be updated to "num_scenario = 1" .
+    To run all scenario's, the "num_scenario" variable can be set to any number other than 1.
 
----- StochasticDP.py - file for solving Part 2: ----
+    To change the single scenario that is modelled, you need to change the
+    " if num_scenario == 1
+            S = [a number between 0 and 4]"
+
+
+---- StochasticDP.py - file for solving Part 3: ----
 * Functions:
 - masterProblem()
     Independent model of the first 24 hours, deterministic input.
@@ -50,3 +57,10 @@ SDP_loop()
 -- SDP_loop()
     The actual SDP methodology algorithm, that sets the order of how and when to call the other functions
     This is the only function that needs to be called in order to solve the problem
+
+    To run a single scenario, this variable need to be updated to "num_scenario = 1" .
+    To run all scenario's, the "num_scenario" variable can be set to any number other than 1.
+
+    To change the single scenario that is modelled, you need to change the
+    " if num_scenario == 1
+            S = [a number between 0 and 4]"
